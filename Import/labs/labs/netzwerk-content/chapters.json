@@ -1,0 +1,100 @@
+{
+  "chapters": [
+    {
+      "id": "ch01-osi",
+      "title": "Netzwerkmodelle (OSI & TCP/IP)",
+      "file": "ch01-osi.md",
+      "section": "Grundlagen"
+    },
+    {
+      "id": "ch02-geraete",
+      "title": "Netzwerkgeräte",
+      "file": "ch02-geraete.md",
+      "section": "Grundlagen"
+    },
+    {
+      "id": "ch03-ipv4",
+      "title": "IPv4 – Adressierung und Subnetting",
+      "file": "ch03-ipv4.md",
+      "section": "Adressierung"
+    },
+    {
+      "id": "ch04-ipv6",
+      "title": "IPv6 – Die Zukunft",
+      "file": "ch04-ipv6.md",
+      "section": "Adressierung"
+    },
+    {
+      "id": "ch05-mac-arp",
+      "title": "MAC-Adressen & ARP",
+      "file": "ch05-mac-arp.md",
+      "section": "Adressierung"
+    },
+    {
+      "id": "ch06-tcp-udp",
+      "title": "TCP & UDP",
+      "file": "ch06-tcp-udp.md",
+      "section": "Protokolle"
+    },
+    {
+      "id": "ch07-dns",
+      "title": "DNS – Namensauflösung",
+      "file": "ch07-dns.md",
+      "section": "Protokolle"
+    },
+    {
+      "id": "ch08-dhcp",
+      "title": "DHCP – Automatische IP-Vergabe",
+      "file": "ch08-dhcp.md",
+      "section": "Protokolle"
+    },
+    {
+      "id": "ch09-http",
+      "title": "HTTP & HTTPS",
+      "file": "ch09-http.md",
+      "section": "Protokolle"
+    },
+    {
+      "id": "ch10-verschluesselung",
+      "title": "Verschlüsselung in Netzwerken",
+      "file": "ch10-verschluesselung.md",
+      "section": "Protokolle"
+    },
+    {
+      "id": "ch11-icmp",
+      "title": "ICMP & Diagnose",
+      "file": "ch11-icmp.md",
+      "section": "Werkzeuge"
+    },
+    {
+      "id": "ch12-linux-tools",
+      "title": "Linux-Netzwerktools",
+      "file": "ch12-linux-tools.md",
+      "section": "Werkzeuge"
+    },
+    {
+      "id": "ch13-routing",
+      "title": "Routing",
+      "file": "ch13-routing.md",
+      "section": "Infrastruktur"
+    },
+    {
+      "id": "ch14-firewall",
+      "title": "Firewall",
+      "file": "ch14-firewall.md",
+      "section": "Infrastruktur"
+    },
+    {
+      "id": "ch15-wireshark",
+      "title": "Wireshark & Paketanalyse",
+      "file": "ch15-wireshark.md",
+      "section": "Analyse"
+    },
+    {
+      "id": "ch16-casestudy",
+      "title": "Fallstudie",
+      "file": "ch16-casestudy.md",
+      "section": "Abschluss"
+    }
+  ]
+}

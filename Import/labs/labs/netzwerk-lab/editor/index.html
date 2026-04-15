@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netzwerk-Lab Editor</title>
+  <style>
+    :root {
+      --bg: #0a0e17; --bg2: #111827; --bg3: #1a1f2e;
+      --text: #e4e8f1; --text2: #8892a4;
+      --accent: #3b82f6; --accent2: #10b981; --danger: #ef4444;
+      --border: #1e293b; --radius: 8px;
+      --font: 'Inter', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+
+    /* Header */
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 1.1rem; font-weight: 600; }
+    .header h1 span { color: var(--accent); }
+    .header-actions { display: flex; gap: 10px; }
+
+    /* Main Layout */
+    .main { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 240px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+    .sidebar-header { padding: 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-header h2 { font-size: 0.85rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+    .sidebar-list { list-style: none; }
+    .sidebar-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.15s; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+    .sidebar-item:hover { background: var(--bg3); }
+    .sidebar-item.active { background: rgba(59,130,246,0.15); border-left: 3px solid var(--accent); }
+    .sidebar-item .badge { font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: var(--text2); margin-left: auto; }
+
+    /* Editor Area */
+    .editor-area { flex: 1; display: flex; flex-direction: column; }
+    .editor-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); }
+    .editor-toolbar .filename { font-family: var(--mono); font-size: 0.85rem; color: var(--text2); }
+    .editor-toolbar .modified { font-size: 0.75rem; color: var(--accent2); }
+
+    .split-view { flex: 1; display: flex; overflow: hidden; }
+    .editor-pane { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+    .preview-pane { flex: 1; display: flex; flex-direction: column; }
+
+    .pane-header { padding: 6px 14px; font-size: 0.75rem; text-transform: uppercase; color: var(--text2); background: var(--bg2); border-bottom: 1px solid var(--border); letter-spacing: 0.5px; }
+
+    textarea { flex: 1; background: var(--bg); color: var(--text); border: none; padding: 16px; font-family: var(--mono); font-size: 14px; line-height: 1.6; resize: none; outline: none; tab-size: 2; }
+    textarea::placeholder { color: var(--text2); }
+
+    .preview-content { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg); }
+    .preview-content h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    .preview-content h2 { font-size: 1.2rem; margin: 16px 0 8px; color: var(--accent); }
+    .preview-content h3 { font-size: 1rem; margin: 12px 0 6px; }
+    .preview-content p { margin-bottom: 10px; line-height: 1.7; color: var(--text2); }
+    .preview-content code { background: rgba(59,130,246,0.15); padding: 2px 6px; border-radius: 3px; font-family: var(--mono); font-size: 0.85rem; }
+    .preview-content pre { background: var(--bg3); padding: 14px; border-radius: var(--radius); margin: 10px 0; overflow-x: auto; }
+    .preview-content pre code { background: none; padding: 0; }
+    .preview-content table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    .preview-content th, .preview-content td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; font-size: 0.9rem; }
+    .preview-content th { background: var(--bg3); color: var(--text); font-weight: 600; }
+    .preview-content ul, .preview-content ol { margin: 8px 0; padding-left: 24px; }
+    .preview-content li { margin-bottom: 4px; color: var(--text2); }
+    .preview-content blockquote { border-left: 3px solid var(--accent); padding: 8px 16px; margin: 10px 0; background: var(--bg3); border-radius: 0 var(--radius) var(--radius) 0; }
+
+    /* Empty state */
+    .empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 1rem; }
+    .empty-state div { text-align: center; }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* Buttons */
+    .btn { padding: 6px 14px; border-radius: 6px; border: none; font-size: 0.85rem; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-success { background: var(--accent2); color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+    .btn-danger:hover { background: rgba(239,68,68,0.1); }
+    .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+    .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: var(--radius); font-size: 0.9rem; z-index: 1000; transition: all 0.3s; transform: translateY(100px); opacity: 0; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-success { background: var(--accent2); color: #fff; }
+    .toast-error { background: var(--danger); color: #fff; }
+
+    /* New chapter modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 420px; }
+    .modal h2 { margin-bottom: 16px; font-size: 1.1rem; }
+    .modal label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 4px; margin-top: 12px; }
+    .modal input { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 0.9rem; outline: none; }
+    .modal input:focus { border-color: var(--accent); }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .section-label { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; padding: 8px 14px 4px; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>✏️ <span>Netzwerk-Lab</span> Editor</h1>
+    <div class="header-actions">
+      <a href="/" target="_blank" class="btn btn-ghost">👁 Vorschau</a>
+      <button class="btn btn-primary" onclick="showNewChapterModal()">+ Neues Kapitel</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2>Kapitel</h2>
+        <span id="chapter-count" style="font-size:0.8rem;color:var(--text2)">0</span>
+      </div>
+      <ul class="sidebar-list" id="sidebar-list"></ul>
+    </div>
+
+    <div class="editor-area" id="editor-area">
+      <div class="empty-state" id="empty-state">
+        <div>
+          <div class="icon">📝</div>
+          <p>Wähle ein Kapitel aus oder erstelle ein neues.</p>
+        </div>
+      </div>
+
+      <div id="editor-container" style="display:none;flex:1;display:flex;flex-direction:column">
+        <div class="editor-toolbar">
+          <span class="filename" id="current-file">-</span>
+          <span class="modified" id="modified-text"></span>
+          <span style="flex:1"></span>
+          <button class="btn btn-danger btn-sm" onclick="deleteChapter()">🗑 Löschen</button>
+          <button class="btn btn-success btn-sm" onclick="saveChapter()">💾 Speichern</button>
+        </div>
+        <div class="split-view">
+          <div class="editor-pane">
+            <div class="pane-header">Markdown</div>
+            <textarea id="editor" placeholder="Schreibe dein Markdown hier..."></textarea>
+          </div>
+          <div class="preview-pane">
+            <div class="pane-header">Vorschau</div>
+            <div class="preview-content" id="preview"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- New Chapter Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2>Neues Kapitel erstellen</h2>
+      <label>ID (z.B. ch16-vpn)</label>
+      <input id="new-id" placeholder="ch16-vpn">
+      <label>Titel</label>
+      <input id="new-title" placeholder="VPN-Grundlagen">
+      <label>Section</label>
+      <input id="new-section" placeholder="Erweitert">
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="hideModal()">Abbrechen</button>
+        <button class="btn btn-primary" onclick="createChapter()">Erstellen</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var chapters = [];
+    var currentId = null;
+    var isDirty = false;
+
+    var editor = document.getElementById('editor');
+    var preview = document.getElementById('preview');
+
+    // Load chapters
+    function loadChapters() {
+      fetch('/api/chapters').then(r => r.json()).then(data => {
+        chapters = data.chapters;
+        renderSidebar();
+        document.getElementById('chapter-count').textContent = chapters.length;
+      });
+    }
+
+    function renderSidebar() {
+      var list = document.getElementById('sidebar-list');
+      var sections = {};
+      chapters.forEach(ch => {
+        if (!sections[ch.section]) sections[ch.section] = [];
+        sections[ch.section].push(ch);
+      });
+      var html = '';
+      for (var sec in sections) {
+        html += '<div class="section-label">' + sec + '</div>';
+        sections[sec].forEach(ch => {
+          html += '<li class="sidebar-item' + (ch.id === currentId ? ' active' : '') + '" onclick="selectChapter(\'' + ch.id + '\')">' +
+            '<span>' + ch.title + '</span>' +
+            (ch.exists ? '<span class="badge">✓</span>' : '<span class="badge" style="color:var(--danger)">✗</span>') +
+            '</li>';
+        });
+      }
+      list.innerHTML = html;
+    }
+
+    function selectChapter(id) {
+      if (isDirty && !confirm('Ungespeicherte Änderungen verwerfen?')) return;
+      currentId = id;
+      var ch = chapters.find(c => c.id === id);
+      document.getElementById('current-file').textContent = ch ? ch.file : '-';
+
+      fetch('/api/chapters/' + id).then(r => {
+        if (!r.ok) throw new Error('Not found');
+        return r.json();
+      }).then(data => {
+        editor.value = data.content || '';
+        document.getElementById('modified-text').textContent = data.modified ? new Date(data.modified).toLocaleString('de-DE') : '';
+        updatePreview();
+        showEditor();
+        renderSidebar();
+        isDirty = false;
+      }).catch(() => {
+        editor.value = '';
+        updatePreview();
+        showEditor();
+        isDirty = false;
+      });
+    }
+
+    function showEditor() {
+      document.getElementById('empty-state').style.display = 'none';
+      var ec = document.getElementById('editor-container');
+      ec.style.display = 'flex';
+    }
+
+    function saveChapter() {
+      if (!currentId) return;
+      fetch('/api/chapters/' + currentId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editor.value })
+      }).then(r => r.json()).then(data => {
+        if (data.success) {
+          isDirty = false;
+          toast('Gespeichert!', 'success');
+          document.getElementById('modified-text').textContent = 'Gerade gespeichert';
+        } else {
+          toast('Fehler: ' + data.error, 'error');
+        }
+      });
+    }
+
+    function deleteChapter() {
+      if (!currentId) return;
+      if (!confirm('Kapitel wirklich löschen?')) return;
+      fetch('/api/chapters/' + currentId, { method: 'DELETE' }).then(r => r.json()).then(data => {
+        if (data.success) {
+          currentId = null;
+          document.getElementById('editor-container').style.display = 'none';
+          document.getElementById('empty-state').style.display = 'flex';
+          loadChapters();
+          toast('Gelöscht!', 'success');
+        }
+      });
+    }
+
+    function showNewChapterModal() { document.getElementById('modal').classList.add('show'); }
+    function hideModal() { document.getElementById('modal').classList.remove('show'); }
+
+    function createChapter() {
+      var id = document.getElementById('new-id').value.trim();
+      var title = document.getElementById('new-title').value.trim();
+      var section = document.getElementById('new-section').value.trim();
+      if (!id || !title || !section) { toast('Alle Felder ausfüllen!', 'error'); return; }
+
+      var content = '# ' + title + '\n\n## Einführung\n\nHier kommt der Inhalt...\n\n' +
+        '<div class="exercise-box">\n' +
+        '<div class="exercise-header"><span class="exercise-badge">Übung</span><span class="exercise-name">' + title + '</span></div>\n' +
+        '<div class="exercise-body">\n' +
+        '<div class="exercise-goal"><div class="goal-label">Ziel</div><p></p></div>\n' +
+        '<div class="exercise-steps"><ol class="numbered-list">\n' +
+        '<li></li>\n' +
+        '</ol></div>\n' +
+        '<div class="toggle-container">\n' +
+        '<div class="toggle-header"><span class="toggle-label">Lösung anzeigen</span><span class="toggle-arrow">&#9654;</span></div>\n' +
+        '<div class="toggle-content"><p></p></div>\n' +
+        '</div></div></div>\n\n' +
+        '<button class="complete-section-btn" data-chapter="' + id + '">&#9744; Kapitel als abgeschlossen markieren</button>\n\n' +
+        '<div class="nav-buttons">\n' +
+        '<button class="nav-btn" data-target="welcome">&#8592; Willkommen</button>\n' +
+        '<button class="nav-btn" data-target="welcome">Weiter &#8594;</button>\n' +
+        '</div>\n';
+
+      fetch('/api/chapters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, title, section, content })
+      }).then(r => r.json()).then(data => {
+        if (data.success) {
+          hideModal();
+          loadChapters();
+          selectChapter(id);
+          toast('Kapitel erstellt!', 'success');
+        } else {
+          toast('Fehler: ' + data.error, 'error');
+        }
+      });
+    }
+
+    // Preview
+    function updatePreview() {
+      var md = editor.value;
+      // Simple markdown to HTML for preview
+      var html = md
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+        .replace(/\n\n/g, '<br><br>');
+
+      // Show raw directives as callouts
+      html = html.replace(/:::callout (\w+)([^\n]*)/g, '<blockquote><strong>$1</strong>$2</blockquote>');
+      html = html.replace(/:::code(?:\s+\w+)?\n/g, '<pre><code>');
+      html = html.replace(/:::/g, '</code></pre>');
+      html = html.replace(/:::nav-buttons[^\n]*/g, '<hr>');
+      html = html.replace(/:::exercise/g, '<hr><strong>ÜBUNG</strong>');
+
+      preview.innerHTML = html;
+    }
+
+    editor.addEventListener('input', function() {
+      isDirty = true;
+      updatePreview();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveChapter();
+      }
+    });
+
+    // Toast
+    function toast(msg, type) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast toast-' + type + ' show';
+      setTimeout(function() { t.classList.remove('show'); }, 2500);
+    }
+
+    loadChapters();
+  </script>
+</body>
+</html>

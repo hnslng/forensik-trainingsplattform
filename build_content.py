@@ -128,48 +128,54 @@ def discover_labs():
 
 
 def discover_chapters(chapters_dir, canonical_order, lab_dir):
-    chapter_dirs = sorted([
-        d for d in os.listdir(chapters_dir)
-        if os.path.isdir(os.path.join(chapters_dir, d))
-    ])
-
+    entries = sorted(os.listdir(chapters_dir))
     chapters = []
-    for dirname in chapter_dirs:
-        dirpath = os.path.join(chapters_dir, dirname)
-        md_files = sorted([
-            f for f in os.listdir(dirpath) if f.endswith(".md")
-        ], key=lambda f: numeric_prefix(f))
 
-        if not md_files:
-            print(f"  Warning: [{lab_dir}] {dirname}/ has no .md files, skipping", file=sys.stderr)
-            continue
+    for entry in entries:
+        entry_path = os.path.join(chapters_dir, entry)
 
-        frontmatter = None
-        html_parts = []
-
-        for i, filename in enumerate(md_files):
-            filepath = os.path.join(dirpath, filename)
-            with open(filepath, "r", encoding="utf-8") as f:
+        if os.path.isfile(entry_path) and entry.endswith(".md"):
+            with open(entry_path, "r", encoding="utf-8") as f:
                 raw = f.read()
 
-            if i == 0:
-                fm, body = parse_frontmatter(raw)
-                if fm is None:
-                    raise ValueError(
-                        f"[{lab_dir}/{dirname}] First .md file '{filename}' must contain YAML frontmatter"
-                    )
-                validate_frontmatter(fm, f"{lab_dir}/{dirname}")
-                frontmatter = fm
-                raw = body
+            fm, body = parse_frontmatter(raw)
+            if fm is None:
+                print(f"  Warning: [{lab_dir}] {entry} has no frontmatter, skipping", file=sys.stderr)
+                continue
+            validate_frontmatter(fm, f"{lab_dir}/{entry}")
+            chapters.append({"frontmatter": fm, "html": body.strip()})
 
-            html_parts.append(raw.strip())
+        elif os.path.isdir(entry_path):
+            md_files = sorted([
+                f for f in os.listdir(entry_path) if f.endswith(".md")
+            ], key=lambda f: numeric_prefix(f))
 
-        chapter_html = "".join(html_parts)
+            if not md_files:
+                print(f"  Warning: [{lab_dir}] {entry}/ has no .md files, skipping", file=sys.stderr)
+                continue
 
-        chapters.append({
-            "frontmatter": frontmatter,
-            "html": chapter_html,
-        })
+            frontmatter = None
+            html_parts = []
+
+            for i, filename in enumerate(md_files):
+                filepath = os.path.join(entry_path, filename)
+                with open(filepath, "r", encoding="utf-8") as f:
+                    raw = f.read()
+
+                if i == 0:
+                    fm, body = parse_frontmatter(raw)
+                    if fm is None:
+                        raise ValueError(
+                            f"[{lab_dir}/{entry}] First .md file '{filename}' must contain YAML frontmatter"
+                        )
+                    validate_frontmatter(fm, f"{lab_dir}/{entry}")
+                    frontmatter = fm
+                    raw = body
+
+                html_parts.append(raw.strip())
+
+            chapter_html = "".join(html_parts)
+            chapters.append({"frontmatter": frontmatter, "html": chapter_html})
 
     chapter_map = {c["frontmatter"]["id"]: c for c in chapters}
 

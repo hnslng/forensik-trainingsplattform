@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABB IT-Fahndung Training - Operative forensische Datensicherung</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/gamification.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F50D;</text></svg>">
+</head>
+<body>
+  <div id="app">
+    <div class="overlay" id="overlay"></div>
+
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <h1>ABB IT-Fahndung</h1>
+        <div class="subtitle">Operative forensische Datensicherung</div>
+      </div>
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" data-tab="nav">Navigation</button>
+        <button class="sidebar-tab" data-tab="ref">Referenz</button>
+      </div>
+      <div class="sidebar-tab-content active" id="sidebar-tab-nav">
+        <div class="sidebar-progress">
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <div class="progress-text" id="progress-text">0 / 22 Kapitel abgeschlossen</div>
+        </div>
+        <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      </div>
+      <div class="sidebar-tab-content" id="sidebar-tab-ref">
+        <div id="reference-body"></div>
+      </div>
+      <div class="sidebar-footer">
+        <button id="reset-progress-btn">Fortschritt zuruecksetzen</button>
+      </div>
+      <button class="sidebar-close-mobile" id="sidebar-close-mobile">&times;</button>
+    </aside>
+
+    <div id="main">
+      <header id="topbar">
+        <button id="menu-toggle">&#9776;</button>
+        <div class="breadcrumb" id="breadcrumb">
+          <span>ABB IT-Fahndung</span> / Willkommen
+        </div>
+        <div class="topbar-actions">
+          <div id="slide-nav-topbar"></div>
+          <button class="topbar-btn" id="terminal-toggle">&#128187; Terminal</button>
+        </div>
+      </header>
+      <div id="main-content">
+        <div id="content"></div>
+      </div>
+      <div id="scroll-fade"></div>
+      <div id="terminal-bottom">
+        <div class="terminal-resize-handle" id="terminal-resize-handle"></div>
+        <div id="terminal-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/progress.js"></script>
+  <script src="assets/js/terminal.js"></script>
+  <script src="assets/js/reference.js"></script>
+  <script src="assets/js/missions.js"></script>
+  <script src="assets/js/cheatsheet.js"></script>
+  <script src="assets/js/chapters.js"></script>
+  <script src="assets/js/labs.js"></script>
+  <script src="assets/js/challenges.js"></script>
+  <script src="assets/js/labs-interactive.js"></script>
+  <script src="assets/js/certification.js"></script>
+  <script src="assets/js/gamification.js"></script>
+  <script src="assets/js/ui-improvements.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

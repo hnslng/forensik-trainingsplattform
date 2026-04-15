@@ -1,0 +1,98 @@
+/* Editor Tab Styles */
+.editor-sidebar-list { list-style: none; padding: 0; }
+.editor-sidebar-item { padding: 8px 14px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+.editor-sidebar-item:hover { background: var(--bg-card); }
+.editor-sidebar-item.active { background: rgba(59,130,246,0.15); border-left: 3px solid var(--accent); }
+.editor-sidebar-section { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; padding: 8px 14px 4px; letter-spacing: 0.5px; }
+.editor-sidebar-actions { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.editor-sidebar-actions button { width: 100%; padding: 6px; border-radius: 6px; border: 1px dashed var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
+.editor-sidebar-actions button:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.08); }
+
+/* Editor View (replaces main content) */
+.editor-view { display: none; flex-direction: column; height: 100%; }
+.editor-view.active { display: flex; }
+.editor-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: var(--bg-card); border-bottom: 1px solid var(--border); }
+.editor-toolbar .filename { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); }
+.editor-split { flex: 1; display: flex; overflow: hidden; }
+.editor-pane { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+.preview-pane { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+.pane-label { padding: 4px 14px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); background: var(--bg-secondary); border-bottom: 1px solid var(--border); letter-spacing: 0.5px; }
+.editor-pane textarea { flex: 1; background: var(--bg-primary); color: var(--text-primary); border: none; padding: 16px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; resize: none; outline: none; tab-size: 2; }
+.preview-pane .preview-md { padding: 20px; line-height: 1.7; }
+.preview-md h1 { font-size: 1.5rem; margin-bottom: 8px; }
+.preview-md h2 { font-size: 1.15rem; margin: 16px 0 8px; color: var(--accent); }
+.preview-md p { margin-bottom: 10px; color: var(--text-secondary); }
+.preview-md code { background: rgba(59,130,246,0.15); padding: 2px 5px; border-radius: 3px; font-family: var(--font-mono); font-size: 0.85rem; }
+.preview-md pre { background: var(--bg-card); padding: 12px; border-radius: var(--radius); margin: 8px 0; }
+.preview-md pre code { background: none; }
+.preview-md table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+.preview-md th, .preview-md td { padding: 6px 10px; border: 1px solid var(--border); text-align: left; font-size: 0.85rem; }
+.preview-md th { background: var(--bg-card); }
+.preview-md ul, .preview-md ol { margin: 6px 0; padding-left: 20px; }
+.preview-md li { margin-bottom: 3px; color: var(--text-secondary); }
+
+/* Editor modal */
+.editor-modal-bg { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; }
+.editor-modal-bg.show { display:flex; }
+.editor-modal { background:var(--bg-secondary); border:1px solid var(--border); border-radius:12px; padding:24px; width:400px; }
+.editor-modal h2 { margin-bottom:16px; font-size:1.1rem; }
+.editor-modal label { display:block; font-size:0.85rem; color:var(--text-secondary); margin:12px 0 4px; }
+.editor-modal input { width:100%; padding:8px 12px; background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; color:var(--text-primary); font-family:var(--font-mono); font-size:0.9rem; outline:none; }
+.editor-modal input:focus { border-color:var(--accent); }
+.editor-modal-btns { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+
+/* Format toolbar */
+.editor-format-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.format-group { display: flex; gap: 2px; }
+.format-sep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
+.fmt-btn {
+  padding: 4px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.fmt-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.08); }
+.fmt-btn:active { transform: scale(0.96); }
+.fmt-insert { color: var(--accent); border-color: rgba(59,130,246,0.3); }
+.fmt-insert:hover { background: rgba(59,130,246,0.12); }
+
+/* Dirty indicator */
+.editor-dirty { font-size: 0.75rem; color: #f59e0b; margin-right: 8px; }
+
+/* Editor action buttons */
+.ed-action-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.ed-action-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.ed-close:hover { border-color: var(--text-muted); color: var(--text-primary); }
+.ed-delete { color: #ef4444; border-color: rgba(239,68,68,0.3); }
+.ed-delete:hover { background: rgba(239,68,68,0.12); border-color: #ef4444; }
+.ed-save { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+.ed-save:hover { background: #2563eb; box-shadow: 0 2px 12px rgba(59,130,246,0.3); }
+
+/* Editor toast */
+.editor-toast { position:fixed; bottom:20px; right:20px; padding:10px 18px; border-radius:8px; font-size:0.9rem; z-index:300; transform:translateY(80px); opacity:0; transition:all 0.3s; }
+.editor-toast.show { transform:translateY(0); opacity:1; }
+.editor-toast.success { background:var(--accent-green); color:#fff; }
+.editor-toast.error { background:#ef4444; color:#fff; }

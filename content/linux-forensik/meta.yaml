@@ -1,32 +1,32 @@
-id: "linux-forensik"
-title: "Linux Forensik Lab"
-icon: "&#128270;"
-description: "Operative forensische Datensicherung — von der Sicherung bis zur gerichtsverwertbaren Beweisfuhrung"
-accent: "#00d4aa"
-
+accent: '#00d4aa'
 canonical_order:
-  - welcome
-  - ch01-grundlagen
-  - ch02-identifikation
-  - ch03-imaging
-  - ch04-hashing
-  - ch05-mounting
-  - ch06-hex
-  - ch07-strings
-  - ch08-dateisysteme
-  - ch09-wipping
-  - ch10-artefakte
-  - ch11-casestudy
-  - ch10-labs
-  - ch11-ctf
-  - ch12-image-formate
-  - ch13-vergleich
-  - ch14-protokollierung
-  - ch15-write-blocker
-  - ch16-sicheres-loeschen
-  - ch17-best-practices
-  - ch18-tools
-  - ch19-datenrettung
-  - ch20-memory-forensik
-  - ch21-netzwerkforensik
-  - ch22-zeitlinienanalyse
+- welcome
+- ch01-grundlagen
+- ch02-identifikation
+- ch03-imaging
+- ch04-hashing
+- ch05-mounting
+- ch06-hex
+- ch07-strings
+- ch08-dateisysteme
+- ch09-wipping
+- ch10-artefakte
+- ch11-casestudy
+- ch10-labs
+- ch11-ctf
+- ch12-image-formate
+- ch13-vergleich
+- ch14-protokollierung
+- ch15-write-blocker
+- ch16-sicheres-loeschen
+- ch17-best-practices
+- ch18-tools
+- ch19-datenrettung
+- ch20-memory-forensik
+- ch21-netzwerkforensik
+- ch22-zeitlinienanalyse
+description: Operative forensische Datensicherung — von der Sicherung bis zur gerichtsverwertbaren
+  Beweisfuhrung
+icon: '&#128270;'
+id: linux-forensik
+title: Linux Forensik Lab

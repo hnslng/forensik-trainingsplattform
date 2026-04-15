@@ -1,13 +1,13 @@
 # Forensik Trainingsplattform
 
-**Multi-Lab Lernplattform für operative forensische Datensicherung**
-Entwickelt für das Amt für Betrugsbekampfung (ABB) – Steuerfahndung.
+**Multi-Lab Lernplattform fur operative forensische Datensicherung und Netzwerkforensik**
+Entwickelt fur das Amt fur Betrugsbekampfung (ABB) – Steuerfahndung.
 
 ## Uber das Projekt
 
-Browserbasierte Single-Page-Application fur die Ausbildung in Linux-basierter Datentragerforensik. Vollstandig offline-fahig, kein Server erforderlich. Integriertes simuliertes Terminal mit Pipe-, Chain- und Redirect-Support fur praxisnahe Ubungen.
+Browserbasierte Single-Page-Application fur die Ausbildung in Linux-basierter Datentragerforensik und Netzwerkforensik. Vollstandig offline-fahig, kein Server erforderlich. Integriertes simuliertes Terminal mit Pipe-, Chain- und Redirect-Support fur praxisnahe Ubungen.
 
-Multi-Lab-Architektur: Labs sind unabhangige Content-Domaine, die automatisch vom Build-System erkannt werden. Neue Labs konnen durch einfaches Hinzufugen eines Verzeichnisses unter `content/` erstellt werden.
+Multi-Lab-Architektur: Labs sind unabhangige Content-Domaine, die automatisch vom Build-System erkannt werden. Jedes Lab besitzt eine eigene Terminal-Umgebung mit spezifischen Befehlen, simuliertem Dateisystem und Netzwerkstatus. Neue Labs konnen durch einfaches Hinzufugen eines Verzeichnisses unter `content/` erstellt werden.
 
 Alle Verfahren orientieren sich an NIST SP 800-86 und ISO/IEC 27037.
 
@@ -17,6 +17,55 @@ Alle Verfahren orientieren sich an NIST SP 800-86 und ISO/IEC 27037.
 - **Build-time Content**: `build_content.py` liest Markdown-Dateien und generiert `content-data.js`
 - **Multi-Lab System**: Labs werden via `content/*/meta.yaml` auto-discovered
 - **Hash-Routing**: `#hub`, `#lab-id`, `#lab-id/chapter-id`
+- **Environment-based Terminal**: Jedes Lab hat eine eigene Terminal-Umgebung mit spezifischen Befehlen
+
+## Terminal System Architecture
+
+Das Terminal verwendet eine **umgebungsbasierte Architektur** (Environment-Based Architecture), bei der Befehle, Dateisystem und Netzwerkstatus pro Lab-Umgebung getrennt sind.
+
+### Command Resolution
+
+Befehle werden in drei Schichten aufgeloest:
+
+1. **Base Commands** – Immer verfugbar: Navigation (`ls`, `cd`, `pwd`), Dateioperationen (`cat`, `head`, `tail`, `cp`, `mv`, `rm`), Suche (`grep`, `find`), Hashing (`sha256sum`, `md5sum`), System (`echo`, `date`, `whoami`, `uname`, `clear`, `help`)
+2. **Forensik Environment** – Nur in `linux-forensik`: Disk-Tools (`lsblk`, `fdisk`, `parted`), Imaging (`dd`, `dc3dd`, `ewfacquire`), Mount (`mount`, `losetup`), Sleuth Kit (`fls`, `mmls`, `icat`), Analyse (`strings`, `xxd`, `hexdump`)
+3. **Netzwerk Environment** – Nur in `netzwerk-forensik`: Diagnose (`ping`, `traceroute`, `mtr`), DNS (`dig`, `nslookup`), HTTP (`curl`, `wget`), Netzwerk-Info (`ip`, `ifconfig`, `ss`), Sicherheit (`nmap`, `tshark`, `tcpdump`), Kryptographie (`openssl`, `ssh-keygen`, `gpg`)
+
+### Simulated State
+
+Jede Umgebung besitzt einen eigenen simulierten Zustand:
+
+| Komponente | Forensik | Netzwerk |
+|-----------|----------|----------|
+| **Filesystem** | Vollstandig (`/cases`, `/dev`, `/mnt`, etc.) | Minimal (`/etc/hosts`, `/etc/resolv.conf`) |
+| **Devices** | Simulierte Blockgerate (sda, sdb, nvme) | Keine |
+| **Network** | Keines | Interfaces (eth0, lo), Routing, ARP, DNS |
+| **Prompt** | `analyst@forensik-workstation:<path>$` | `analyst@netzwerk-lab:<path>$` |
+
+### Environment Switching
+
+Beim Wechsel zwischen Labs wird automatisch die Terminal-Umgebung gewechselt:
+
+- `setEnvironment(envId)` tauscht Befehlssatz, Dateisystem und Netzwerkstatus
+- Zustand pro Umgebung wird persistent gespeichert (Verzeichniswechsel, erstellte Dateien)
+- `help` zeigt nur fur die aktuelle Umgebung verfugbare Befehle
+
+### Extensibility
+
+Neue Umgebungen konnen durch Erweiterung der drei Arrays hinzugefugt werden:
+
+- `TerminalBaseCommandNames` – Befehle, die immer verfugbar sind
+- `TerminalForensikCommandNames` / `TerminalNetzwerkCommandNames` – Umgebungsspezifische Befehle
+- `TerminalSharedNetworkFS` / `TerminalSharedNetwork` – Simulierter Zustand
+
+### Terminal-Features
+
+- **Pipe-Support**: `command1 | command2`
+- **Chaining**: `command1 ; command2` und `command1 && command2`
+- **Redirect**: `command > file`
+- **Redirect stderr**: `command 2>/dev/null`
+- **History**: Arrow Up/Down
+- **Script-Logging**: `script session.log` / `exit`
 
 ## Projektstruktur
 
@@ -28,7 +77,12 @@ content/
       welcome/00-intro.md
       ch01-grundlagen/00-intro.md, 01-section.md, ...
       ch22-zeitlinienanalyse/...
-  (weitere Labs hier anlegen)
+  netzwerk-forensik/
+    meta.yaml                     # Netzwerk-Lab Metadaten
+    chapters/
+      welcome/00-intro.md
+      ch01-osi/00-intro.md, ...
+      ch16-zusammenfassung/...
 
 forensik-lab/
   index.html                      # SPA Hauptanwendung
@@ -40,8 +94,9 @@ forensik-lab/
       content-data.js             # Auto-generiert (nicht manuell bearbeiten!)
       app.js                      # Router, Hub-View, Slide-Parser, Navigation
       progress.js                 # Lab-namespaced Fortschritts-Tracking
-      terminal.js                 # Terminal-Simulation
-      reference.js                # Referenz-Panel
+      terminal.js                 # Terminal-Simulation (Environment-Based)
+      reference-forensik.js       # Forensik Referenz-Panel
+      reference-netzwerk.js       # Netzwerk Referenz-Panel
       gamification.js             # Achievement-System
       challenges.js               # CTF-Challenges
       certification.js            # Zertifizierung
@@ -92,14 +147,17 @@ python3 build_content.py
 3. Kapitel anlegen: `content/<lab-id>/chapters/<chapter-id>/00-intro.md`
 4. `python3 build_content.py` ausfuhren
 5. Lab erscheint automatisch im Hub
+6. Bei Bedarf Terminal-Umgebung in `terminal.js` erganzen (neues Command-Array + State)
 
 ## Routing
 
 | Hash | Ansicht |
 |------|---------|
 | `#` oder `#hub` | Hub (Lab-Auswahl) |
-| `#linux-forensik` | Welcome-Seite des Labs |
-| `#linux-forensik/ch03-imaging` | Spezifisches Kapitel |
+| `#linux-forensik` | Welcome-Seite des Forensik-Labs |
+| `#linux-forensik/ch03-imaging` | Spezifisches Forensik-Kapitel |
+| `#netzwerk-forensik` | Welcome-Seite des Netzwerk-Labs |
+| `#netzwerk-forensik/ch03-dns` | Spezifisches Netzwerk-Kapitel |
 
 ## Deployment
 
@@ -125,7 +183,7 @@ server {
 - Google Fonts: Inter (UI) + JetBrains Mono (Code/Terminal)
 - localStorage fur lab-namespaced Fortschritt
 - Python 3 Build-Script (PyYAML)
-- Keine externen Runtime-Abhangigkeiten
+- Keine externen runtime-Abhangigkeiten
 
 ## Lizenz
 

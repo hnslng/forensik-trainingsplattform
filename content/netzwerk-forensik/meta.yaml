@@ -1,0 +1,23 @@
+accent: '#3b82f6'
+canonical_order:
+- welcome
+- ch01-osi
+- ch02-geraete
+- ch03-ipv4
+- ch04-ipv6
+- ch05-mac-arp
+- ch06-tcp-udp
+- ch07-dns
+- ch08-dhcp
+- ch09-http
+- ch10-verschluesselung
+- ch11-icmp
+- ch12-linux-tools
+- ch13-routing
+- ch14-firewall
+- ch15-wireshark
+- ch16-casestudy
+description: Netzwerkgrundlagen für IT-Fahnder — von OSI bis Wireshark
+icon: '&#127760;'
+id: netzwerk-forensik
+title: Netzwerk Forensik Lab

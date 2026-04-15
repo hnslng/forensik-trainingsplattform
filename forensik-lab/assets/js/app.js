@@ -2,9 +2,26 @@ var App = (function () {
   var currentLab = null;
   var currentChapter = null;
   var panelTerminal = null;
+  var pendingTerminalEnv = null;
   var currentSlide = 0;
   var totalSlides = 0;
   var slides = [];
+
+  function initTerminalWithEnv() {
+    if (!panelTerminal) return;
+    if (pendingTerminalEnv && panelTerminal.environment !== pendingTerminalEnv) {
+      panelTerminal.setEnvironment(pendingTerminalEnv);
+    } else if (!pendingTerminalEnv && currentLab) {
+      panelTerminal.setEnvironment(currentLab);
+    }
+  }
+
+  function setActiveTerminalEnvironment(envId) {
+    pendingTerminalEnv = envId || null;
+    if (panelTerminal && panelTerminal.setEnvironment) {
+      panelTerminal.setEnvironment(envId);
+    }
+  }
 
   function getLabRegistry() {
     return (typeof LabRegistry !== "undefined") ? LabRegistry : [];
@@ -38,7 +55,6 @@ var App = (function () {
   function init() {
     bindGlobalEvents();
     if (typeof Cheatsheet !== "undefined" && Cheatsheet.render) Cheatsheet.render();
-    renderReferenceSidebar();
     handleRoute();
     window.addEventListener("hashchange", handleRoute);
     var mc = document.getElementById("main-content");
@@ -146,6 +162,8 @@ var App = (function () {
     el.innerHTML = html;
 
     updateBreadcrumbHub();
+    setActiveReference(null);
+    renderReferenceSidebar();
     buildHubSidebar();
 
     var cards = el.querySelectorAll(".hub-card");
@@ -202,6 +220,8 @@ var App = (function () {
     totalSlides = 0;
     slides = [];
 
+    setActiveTerminalEnvironment(labId);
+
     var el = document.getElementById("content");
 
     if (chapterId === "welcome") {
@@ -213,6 +233,8 @@ var App = (function () {
     buildLabSidebar(labId);
     updateBreadcrumb(labId, chapterId);
     highlightNav(chapterId);
+    setActiveReference(labId);
+    renderReferenceSidebar();
     bindContentEvents();
     injectTryButtons();
     updateSidebarHeader(labId);
@@ -351,6 +373,7 @@ var App = (function () {
       if (!panelTerminal) {
         panelTerminal = new InteractiveTerminal("terminal-container");
         panelTerminal.init();
+        initTerminalWithEnv();
       }
     }
     setTimeout(updateScrollFade, 350);
@@ -398,11 +421,20 @@ var App = (function () {
     if (!panelTerminal) {
       panelTerminal = new InteractiveTerminal("terminal-container");
       panelTerminal.init();
+      initTerminalWithEnv();
     }
     if (panelTerminal.inputEl) {
       panelTerminal.inputEl.value = cmd;
       if (panelTerminal.updateMirror) panelTerminal.updateMirror();
       panelTerminal.inputEl.focus();
+    }
+  }
+
+  function setActiveReference(labId) {
+    if (labId === "netzwerk-forensik" && typeof ReferenceNetzwerk !== "undefined") {
+      window.Reference = ReferenceNetzwerk;
+    } else if (typeof ReferenceForensik !== "undefined") {
+      window.Reference = ReferenceForensik;
     }
   }
 
@@ -706,6 +738,7 @@ var App = (function () {
       if (!panelTerminal) {
         panelTerminal = new InteractiveTerminal("terminal-container");
         panelTerminal.init();
+        initTerminalWithEnv();
       }
       if (panelTerminal.inputEl) {
         panelTerminal.inputEl.focus();

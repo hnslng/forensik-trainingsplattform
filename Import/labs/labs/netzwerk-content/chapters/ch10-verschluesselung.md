@@ -1,0 +1,173 @@
+<h1 class="chapter-title">Verschlüsselung in Netzwerken</h1>
+<div class="chapter-subtitle">Symmetrisch, asymmetrisch und wie TLS beides kombiniert</div>
+
+<p class="chapter-intro">Jedes Mal wenn du eine Webseite mit https:// öffnst, läuft Verschlüsselung im Hintergrund. Dieses Kapitel erklärt die zwei Grundtypen, ihre Vor- und Nachteile, und wie sie in der Praxis zusammenarbeiten.</p>
+
+<div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du verstehst den Unterschied zwischen symmetrischer und asymmetrischer Verschlüsselung, kennst die wichtigsten Algorithmen und weisst wie TLS (HTTPS) beides kombiniert. Du kannst Zertifikate mit openssl prüfen.</p></div>
+
+<div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128273;</div><div class="feature-text"><h3>Symmetrisch</h3><p>Ein Schlüssel für alles</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128274;</div><div class="feature-text"><h3>Asymmetrisch</h3><p>Public & Private Key</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128272;</div><div class="feature-text"><h3>Hash-Funktionen</h3><p>Einweg-Verschlüsselung</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>openssl</h3><p>Zertifikate prüfen im Terminal</p></div></div></div>
+
+## 10.1 Warum Verschlüsselung?
+
+Stell dir vor, du schickst eine Postkarte: Jeder Postmitarbeiter kann sie lesen. Eine Netzwerkverbindung ohne Verschlüsselung ist genau das – jeder im selben WLAN oder zwischen dir und dem Server kann mitlesen.
+
+**Verschlüsselung** verwandelt lesbaren Text (Klartext) in unlesbaren Code (Chiffretext). Nur wer den richtigen Schlüssel hat, kann ihn wieder entschlüsseln.
+
+> **Merke:** Ohne Verschlüsselung sind Passwörter, Cookies, Formulardaten und alles andere im Klartext über das Netzwerk sichtbar. Das ist der Grund warum **HTTPS** statt HTTP der Standard ist.
+
+## 10.2 Symmetrische Verschlüsselung
+
+Bei der **symmetrischen Verschlüsselung** gibt es **einen einzigen Schlüssel**. Damit wird ver- UND entschlüsselt. Wie ein Türschloss: derselbe Schlüssel schließt auf und ab.
+
+| Algorithmus | Schlüssellänge | Verwendung |
+|---|---|---|
+| **AES-128** | 128 Bit | Standard, schnell genug für alles |
+| **AES-256** | 256 Bit | Hohe Sicherheit (Regierung, Militär) |
+| **ChaCha20** | 256 Bit | Mobilgeräte, TLS 1.3 |
+| **3DES** | 168 Bit | Veraltet, wird abgeschafft |
+
+**Vorteile:**
+- **Schnell:** Wenig Rechenaufwand, auch für große Datenmengen
+- **Einfach:** Ein Schlüssel reicht
+
+**Nachteile:**
+- **Schlüsselverteilungsproblem:** Wie bekommst du den Schlüssel sicher zum anderen? Wenn du ihn unverschlüsselt schickst, kann ihn jeder mitlesen – paradox!
+
+> **Tipp:** Stell dir vor: Du willst einem Freund einen Tresor schicken. Aber der Schlüssel für den Tresor muss ja auch irgendwie zum Freund. Wenn du den Schlüssel mit der Post schickst, kann ihn jeder nehmen. Genau dieses Problem löst die asymmetrische Verschlüsselung.
+
+## 10.3 Asymmetrische Verschlüsselung
+
+Bei der **asymmetrischen Verschlüsselung** gibt es **zwei Schlüssel**:
+- **Public Key** (öffentlicher Schlüssel) – darf jeder kennen. Damit wird verschlüsselt.
+- **Private Key** (privater Schlüssel) – nur du hast ihn. Damit wird entschlüsselt.
+
+Wie ein Briefkasten: Jeder kann etwas einwerfen (Public Key), aber nur du hast den Schlüssel zum Öffnen (Private Key).
+
+| Algorithmus | Schlüssellänge | Verwendung |
+|---|---|---|
+| **RSA** | 2048–4096 Bit | TLS-Zertifikate, digitale Signaturen |
+| **ECC** (Elliptic Curve) | 256–521 Bit | Moderne TLS, Mobil, IoT |
+| **Diffie-Hellman** | 2048+ Bit | Schlüsselaustausch (Key Exchange) |
+
+**Vorteile:**
+- **Kein gemeinsamer Schlüssel nötig:** Jeder hat sein eigenes Schlüsselpaar
+- **Digitale Signaturen:** Beweist dass eine Nachricht wirklich vom Absender kommt
+- **Sicherer Schlüsselaustausch:** Public Keys können öffentlich geteilt werden
+
+**Nachteile:**
+- **Langsam:** Etwa 1000x langsamer als symmetrisch
+- **Nicht für große Datenmengen:** Zu viel Rechenaufwand
+
+> **Merke:** Symmetrisch = ein Schlüssel, schnell, aber Verteilungsproblem. Asymmetrisch = zwei Schlüssel, sicherer Austausch, aber langsam.
+
+## 10.4 In der Praxis: Wie TLS beides kombiniert
+
+TLS (Transport Layer Security) ist das Protokoll hinter **HTTPS**. Es nutzt das Beste aus beiden Welten:
+
+**Der TLS-Handshake in 4 Schritten:**
+
+1. **Client Hello** → Browser sagt: "Ich möchte eine sichere Verbindung. Hier sind meine unterstützten Verfahren."
+2. **Server Hello + Zertifikat** → Server antwortet: "OK, hier ist mein Zertifikat (mit meinem Public Key)."
+3. **Schlüsselaustausch** → Browser erzeugt einen zufälligen **Session-Key** (symmetrisch), verschlüsselt ihn mit dem **Public Key** des Servers und schickt ihn.
+4. **Symmetrische Verbindung** → Ab jetzt läuft ALLES mit dem schnellen symmetrischen Session-Key (AES).
+
+> **Tipp:** Asymmetrisch wird nur für den kurzen Moment des Schlüsselaustauschs genutzt (ca. 100ms). Danach läuft die gesamte Kommunikation symmetrisch – schnell und effizient. Das ist der geniale Trick von TLS.
+
+## 10.5 Hash-Funktionen (Einweg)
+
+Hash-Funktionen sind keine Verschlüsselung im eigentlichen Sinn, aber eng verwandt. Sie wandeln beliebige Daten in einen **festen Fingerabdruck** um – und das ist **nicht umkehrbar**.
+
+| Algorithmus | Ausgabe | Verwendung |
+|---|---|---|
+| **SHA-256** | 256 Bit | Integritätsprüfung, TLS-Zertifikate |
+| **SHA-3** | variabel | Nachfolger von SHA-2 |
+| **MD5** | 128 Bit | Veraltet, nur noch für Prüfsummen |
+
+**Eigenschaften:**
+- **Einweg:** Aus dem Hash kann man NICHT die Originaldaten zurückgewinnen
+- **Deterministisch:** Gleiche Eingabe → immer gleicher Hash
+- **Lawineneffekt:** Eine kleine Änderung → komplett anderer Hash
+- **Kollisionsresistent:** Zwei verschiedene Eingaben → (praktisch) nie gleicher Hash
+
+**Wofür?**
+- **Integrität:** Wurde eine Datei verändert? Hash vorher/nachher vergleichen.
+- **Passwörter:** Datenbank speichert nur den Hash, nicht das Passwort
+- **Digitale Signaturen:** Hash wird mit Private Key signiert
+
+## 10.6 Digitale Signaturen
+
+Eine digitale Signatur beweist: **Diese Nachricht kommt wirklich von diesem Absender und wurde nicht verändert.**
+
+**So funktioniert es:**
+
+1. Absender erstellt Hash der Nachricht
+2. Hash wird mit dem **Private Key** verschlüsselt (= die Signatur)
+3. Nachricht + Signatur werden gesendet
+4. Empfänger entschlüsselt Signatur mit dem **Public Key** des Absenders
+5. Empfänger erstellt selbst einen Hash der Nachricht
+6. Stimmen beide Hashes überein → Nachricht ist echt und unverändert
+
+> **Merke:** Verschlüsselung = Vertraulichkeit (niemand kann mitlesen). Signaturen = Authentizität + Integrität (niemand hat es verändert, es ist wirklich vom Absender).
+
+## 10.7 Zertifikate und Vertrauen
+
+Wenn du `https://example.com` öffnest, wie weiß dein Browser dass der Server wirklich example.com ist? Durch **Zertifikate**.
+
+Ein Zertifikat enthält:
+- Den Public Key des Servers
+- Den Domainnamen
+- Eine digitale Signatur einer **Certificate Authority (CA)**
+- Ablaufdatum
+
+**Der Vertrauenskette:**
+1. Dein Betriebssystem hat eine Liste vertrauenswürdiger CAs (z.B. DigiCert, Let's Encrypt)
+2. Die CA signiert das Zertifikat des Servers
+3. Dein Browser prüft: Ist die Signatur gültig? Ist die Domain richtig? Ist es abgelaufen?
+
+Wenn alles passt → grünes Schloss-Symbol. Wenn nicht → Browser-Warnung.
+
+<div class="exercise-start-banner"><div class="exercise-start-icon">&#128187;</div><div class="exercise-start-text"><strong>Terminal-Übung beginnt jetzt!</strong><br>Das Terminal unten öffnet sich automatisch. Du wirst Schritt für Schritt die Befehle ausprobieren.</div></div>
+
+
+<p><strong>Was dich erwartet:</strong> Du übst die wichtigsten Befehle dieses Kapitels im simulierten Terminal.</p>
+
+
+<div class="callout callout-info"><div class="callout-header">&#9432; So funktioniert es</div><p>Auf jeder der nächsten Slides steht ein Befehl in einem grauen Code-Block. Tippe ihn <strong>exakt so</strong> ins Terminal ein und drücke Enter. Unter dem Befehl siehst du die <strong>erwartete Ausgabe</strong> – vergleiche sie mit dem, was dein Terminal anzeigt.</p></div>
+
+
+<div class="callout callout-warning"><div class="callout-header">&#9888; Keine Angst vor Fehlern!</div><p>Du kannst nichts kaputt machen – das Terminal ist simuliert. Wenn etwas nicht klappt, tippe den Befehl einfach nochmal. Nutze den <strong>Kopieren</strong>-Button neben dem Code-Block zum Kopieren.</p></div>
+
+
+<div class="callout callout-warning"><div class="callout-header">&#9888; Keine Angst vor Fehlern!</div><p>Du kannst nichts kaputt machen – das Terminal ist simuliert. Wenn etwas nicht klappt, tippe den Befehl einfach nochmal. Nutze den <strong>Kopieren</strong>-Button neben dem Code-Block zum Kopieren.</p></div>
+
+## 10.8 Übung: Zertifikat mit openssl prüfen
+
+## 10.9 Übung: Nur das Ablaufdatum prüfen
+
+## 10.10 Übung: Hash einer Datei erstellen
+
+## 10.12 Übung: RSA-Private-Key erstellen
+
+## 10.13 Übung: SSH-Key-Pair erstellen
+
+## 10.14 Übung: Moderner Ed25519-Key
+
+## 10.15 Übung: GPG-Key erstellen (E-Mail-Verschlüsselung)
+
+GPG (GNU Privacy Guard) nutzt asymmetrische Verschlüsselung für E-Mails und Dateien. Gleiche Prinzip wie SSH, aber für andere Zwecke:
+
+<div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren
+
+
+
+<div class="callout callout-success"><div class="callout-header">&#10003; Geschafft!</div>
+
+<div class="callout callout-tip"><div class="callout-header">&#128161; Wofür brauche ich was?</div>
+
+<p><strong>Erwartete Ausgabe im Terminal:</strong></p>
+<p><strong>Erwartete Ausgabe im Terminal:</strong></p>
+<div class="code-block output-block"><div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+
+<div class="callout callout-success"><div class="callout-header">&#10003; Geschafft!</div><p>Du hast die Übungen dieses Kapitels abgeschlossen.</p></div>
+<button class="complete-section-btn" data-chapter="ch10-verschluesselung">&#9744; Kapitel als abgeschlossen markieren</button>
+<div class="nav-buttons"><button class="nav-btn" data-target="ch09-http">&#8592; HTTP</button><button class="nav-btn" data-target="ch11-icmp">ICMP &#8594;</button></div>

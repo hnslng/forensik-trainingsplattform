@@ -16,6 +16,57 @@ var TerminalSharedDevices = {
 	nvme0n1: { size: '512GB', model: 'Samsung NVMe 970', type: 'disk', children: { nvme0n1p1: { size: '512G', type: 'part', fstype: 'ext4', mountpoint: '' } } }
 };
 
+var TerminalSharedNetworkFS = {
+	'/': { type: 'dir', children: ['home', 'etc', 'tmp'] },
+	'/home': { type: 'dir', children: ['analyst'] },
+	'/home/analyst': { type: 'dir', children: [] },
+	'/etc': { type: 'dir', children: ['hosts', 'resolv.conf'] },
+	'/etc/hosts': { type: 'file', content: '127.0.0.1\tlocalhost\n192.168.1.100\tnetzwerk-lab', size: '48B' },
+	'/etc/resolv.conf': { type: 'file', content: 'nameserver 192.168.1.1\nsearch localdomain', size: '40B' },
+	'/tmp': { type: 'dir', children: [] }
+};
+
+var TerminalSharedNetwork = {
+	interfaces: {
+		lo: { mac: '00:00:00:00:00:00', ipv4: '127.0.0.1/8', ipv6: '::1/128', state: 'UP' },
+		eth0: { mac: '08:00:27:a1:b2:c3', ipv4: '192.168.1.100/24', ipv6: 'fe80::a00:27ff:fea1:b2c3/64', state: 'UP' }
+	},
+	routing: [
+		{ dest: 'default', via: '192.168.1.1', dev: 'eth0', proto: 'dhcp' },
+		{ dest: '192.168.1.0/24', via: null, dev: 'eth0', proto: 'kernel' }
+	],
+	arp: [
+		{ ip: '192.168.1.1', mac: 'aa:bb:cc:dd:ee:01', dev: 'eth0', state: 'REACHABLE' },
+		{ ip: '192.168.1.50', mac: 'aa:bb:cc:dd:ee:02', dev: 'eth0', state: 'STALE' }
+	],
+	dnsMap: {
+		'google.com': '142.250.185.206',
+		'github.com': '140.82.121.4',
+		'example.com': '93.184.216.34',
+		'facebook.com': '157.240.214.35',
+		'8.8.8.8': '8.8.8.8',
+		'1.1.1.1': '1.1.1.1',
+		'localhost': '127.0.0.1'
+	}
+};
+
+var TerminalEnvConfig = {
+	'linux-forensik': {
+		title: 'FORENSIK-TERMINAL',
+		welcomeMsg: 'Willkommen im Forensik-Terminal. Tippe "help" fuer alle Befehle.\n'
+	},
+	'netzwerk-forensik': {
+		title: 'NETZWERK-TERMINAL',
+		welcomeMsg: 'Willkommen im Netzwerk-Terminal. Tippe "help" fuer alle Befehle.\n'
+	}
+};
+
+var TerminalBaseCommandNames = ['clear', 'echo', 'tee', 'date', 'whoami', 'which', 'history', 'pwd', 'cd', 'mkdir', 'cat', 'uname', 'help', 'man', 'sudo', 'sync', 'exit', 'ls', 'tree', 'grep', 'find', 'strings', 'file', 'stat', 'head', 'tail', 'rm', 'cp', 'mv', 'touch', 'sha256sum', 'md5sum', 'shasum', 'xxd', 'hexdump', 'diff', 'cmp', 'apt', 'apt-get'];
+
+var TerminalForensikCommandNames = ['lsblk', 'fdisk', 'parted', 'dd', 'dc3dd', 'dcfldd', 'ewfacquire', 'mount', 'umount', 'losetup', 'ewfmount', 'fls', 'mmls', 'icat', 'istat', 'hdparm', 'nvme', 'blockdev', 'script', 'blkid'];
+
+var TerminalNetzwerkCommandNames = ['ping', 'traceroute', 'tracepath', 'mtr', 'dig', 'nslookup', 'curl', 'wget', 'ip', 'ifconfig', 'ss', 'netstat', 'nmap', 'tshark', 'tcpdump', 'arp', 'openssl', 'ssh-keygen', 'gpg', 'hostname'];
+
 var TerminalCommands = {
 	resolvePath: function(currentPath, p) {
 		if (p.charAt(0) === '/') return p.replace(/\/$/, '') || '/';
@@ -35,11 +86,24 @@ var TerminalCommands = {
 		return null;
 	},
 
+	isCommandAvailable: function(cmd, envId) {
+		if (TerminalBaseCommandNames.indexOf(cmd) !== -1) return true;
+		if (envId === 'linux-forensik' && TerminalForensikCommandNames.indexOf(cmd) !== -1) return true;
+		if (envId === 'netzwerk-forensik' && TerminalNetzwerkCommandNames.indexOf(cmd) !== -1) return true;
+		return false;
+	},
+
 	execute: function(cmdLine, ctx, stdin) {
 		var parts = cmdLine.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
 		var cmd = parts[0];
 		var args = parts.slice(1).map(function(a) { return a.replace(/^"|"$/g, ''); });
 		var self = TerminalCommands;
+		var envId = ctx.environment || 'linux-forensik';
+
+		if (!self.isCommandAvailable(cmd, envId)) {
+			return { outputs: [{ text: 'bash: ' + cmd + ': Befehl nicht gefunden. Tippe "help" fuer Hilfe.', type: 'error' }], clear: false };
+		}
+
 		switch (cmd) {
 			case 'ls': return { outputs: self.ls(ctx, args), clear: false };
 			case 'lsblk': return { outputs: self.lsblk(ctx, args), clear: false };
@@ -111,8 +175,29 @@ var TerminalCommands = {
 			case 'hexdump': return { outputs: self.hexdumpCmd(ctx, args), clear: false };
 			case 'shasum': return { outputs: self.shasumCmd(ctx, args), clear: false };
 			case 'apt':
-		case 'apt-get': return { outputs: [{ text: 'Paketverwaltung in dieser Simulation nicht verfuegbar.', type: 'warning' }], clear: false };
-		default: return { outputs: [{ text: 'bash: ' + cmd + ': Befehl nicht gefunden. Tippe "help" fuer Hilfe.', type: 'error' }], clear: false };
+			case 'apt-get': return { outputs: [{ text: 'Paketverwaltung in dieser Simulation nicht verfuegbar.', type: 'warning' }], clear: false };
+
+			case 'ping': return { outputs: self.cmdPing(ctx, args), clear: false };
+			case 'traceroute': case 'tracepath': return { outputs: self.cmdTraceroute(ctx, args), clear: false };
+			case 'mtr': return { outputs: self.cmdMtr(ctx, args), clear: false };
+			case 'dig': return { outputs: self.cmdDig(ctx, args), clear: false };
+			case 'nslookup': return { outputs: self.cmdNslookup(ctx, args), clear: false };
+			case 'curl': return { outputs: self.cmdCurl(ctx, args), clear: false };
+			case 'wget': return { outputs: self.cmdWget(ctx, args), clear: false };
+			case 'ip': return { outputs: self.cmdIp(ctx, args), clear: false };
+			case 'ifconfig': return { outputs: self.cmdIfconfig(ctx, args), clear: false };
+			case 'ss': return { outputs: self.cmdSs(ctx, args), clear: false };
+			case 'netstat': return { outputs: self.cmdSs(ctx, args), clear: false };
+			case 'nmap': return { outputs: self.cmdNmap(ctx, args), clear: false };
+			case 'tshark': return { outputs: self.cmdTshark(ctx, args), clear: false };
+			case 'tcpdump': return { outputs: self.cmdTcpdump(ctx, args), clear: false };
+			case 'arp': return { outputs: self.cmdArp(ctx, args), clear: false };
+			case 'openssl': return { outputs: self.cmdOpenssl(ctx, args), clear: false };
+			case 'ssh-keygen': return { outputs: self.cmdSshKeygen(ctx, args), clear: false };
+			case 'gpg': return { outputs: self.cmdGpg(ctx, args), clear: false };
+			case 'hostname': return { outputs: self.cmdHostname(ctx, args), clear: false };
+
+			default: return { outputs: [{ text: 'bash: ' + cmd + ': Befehl nicht gefunden. Tippe "help" fuer Hilfe.', type: 'error' }], clear: false };
 		}
 	},
 
@@ -182,7 +267,97 @@ var TerminalCommands = {
 	},
 
 	help: function(ctx, args) {
-		var h = 'Verfuegbare Befehle:\n\nNavigation:\n  ls [-la] [Pfad]    - Verzeichnis auflisten\n  cd <Pfad>          - Verzeichnis wechseln\n  pwd                - Aktuelles Verzeichnis anzeigen\n  tree [Pfad]        - Verzeichnisbaum anzeigen\n  clear              - Terminal loeschen\n\nIdentifikation:\n  lsblk [-o ...]     - Blockgeraete anzeigen\n  fdisk -l [dev]     - Partitionstabelle anzeigen\n  parted [dev] print - Partitionstabelle strukturiert\n  hdparm -I [dev]    - Geraete-Info/Serial\n\nImaging:\n  dd if=... of=...   - Image erstellen\n  dc3dd if=...       - Forensisches dd mit Hash\n  dcfldd if=...      - Forensisches dd Alternative\n  ewfacquire [dev]   - E01-Image erstellen\n\nHashing:\n  sha256sum [file]   - SHA-256 Hash berechnen\n  md5sum [file]      - MD5 Hash berechnen\n  shasum [-c] [file] - Hash berechnen/pruefen\n\nMount:\n  mount -o ...       - Dateisystem einhaengen\n  umount [path]      - Dateisystem aushaengen\n  losetup -a         - Loop-Devices anzeigen\n  ewfmount [E01]     - E01-Image mounten\n\nAnalyse:\n  xxd -l N [file]    - Hex-Dump erstellen\n  hexdump -C [file]  - Hex-Dump (kanonisch)\n  strings [file]     - Strings extrahieren\n  grep [pattern]     - Muster suchen\n  find [path] ...    - Dateien suchen\n  fls -r [image]     - Sleuth Kit: Dateiliste\n  mmls [image]       - Sleuth Kit: Partitions-Layout\n\nDateien:\n  cat [file]         - Dateiinhalt anzeigen\n  head [-n N] [file] - Erste Zeilen anzeigen\n  tail [-n N] [file] - Letzte Zeilen anzeigen\n  file [file]        - Dateityp bestimmen\n  stat [file]        - Dateimetadaten anzeigen\n\nVerwaltung:\n  cp [src] [dest]    - Datei kopieren\n  mv [src] [dest]    - Datei verschieben\n  rm [-r] [file]     - Datei loeschen\n  touch [file]       - Datei erstellen/aktualisieren\n  mkdir -p [path]    - Verzeichnis erstellen\n\nSystem:\n  echo [text]        - Text ausgeben\n  date               - Datum/Zeit anzeigen\n  uname -a           - Systeminformationen\n  whoami             - Aktueller Benutzer\n  which [cmd]        - Befehlspfad anzeigen\n  history            - Befehls-History\n  script [file]      - Sitzung protokollieren\n\nHDD/SSD:\n  blockdev --setro   - Read-only setzen\n  hdparm --security-erase - SSD Secure Erase\n  nvme format        - NVMe Secure Erase';
+		var envId = ctx.environment || 'linux-forensik';
+		var h = 'Verfuegbare Befehle:\n\n';
+		h += 'Navigation:\n';
+		h += '  ls [-la] [Pfad]    - Verzeichnis auflisten\n';
+		h += '  cd <Pfad>          - Verzeichnis wechseln\n';
+		h += '  pwd                - Aktuelles Verzeichnis anzeigen\n';
+		h += '  tree [Pfad]        - Verzeichnisbaum anzeigen\n';
+		h += '  clear              - Terminal loeschen\n\n';
+		h += 'Dateien:\n';
+		h += '  cat [file]         - Dateiinhalt anzeigen\n';
+		h += '  head [-n N] [file] - Erste Zeilen anzeigen\n';
+		h += '  tail [-n N] [file] - Letzte Zeilen anzeigen\n';
+		h += '  file [file]        - Dateityp bestimmen\n';
+		h += '  stat [file]        - Dateimetadaten anzeigen\n';
+		h += '  cp [src] [dest]    - Datei kopieren\n';
+		h += '  mv [src] [dest]    - Datei verschieben\n';
+		h += '  rm [-r] [file]     - Datei loeschen\n';
+		h += '  touch [file]       - Datei erstellen/aktualisieren\n';
+		h += '  mkdir -p [path]    - Verzeichnis erstellen\n\n';
+		h += 'Suche:\n';
+		h += '  grep [pattern]     - Muster suchen\n';
+		h += '  find [path] ...    - Dateien suchen\n';
+		h += '  strings [file]     - Strings extrahieren\n\n';
+		h += 'Hashing:\n';
+		h += '  sha256sum [file]   - SHA-256 Hash berechnen\n';
+		h += '  md5sum [file]      - MD5 Hash berechnen\n';
+		h += '  shasum [-c] [file] - Hash berechnen/pruefen\n\n';
+		h += 'System:\n';
+		h += '  echo [text]        - Text ausgeben\n';
+		h += '  date               - Datum/Zeit anzeigen\n';
+		h += '  uname -a           - Systeminformationen\n';
+		h += '  whoami             - Aktueller Benutzer\n';
+		h += '  history            - Befehlsverlauf\n';
+		h += '  which [cmd]        - Befehlspfad anzeigen\n\n';
+
+		if (envId === 'linux-forensik') {
+			h += 'Identifikation:\n';
+			h += '  lsblk [-o ...]     - Blockgeraete anzeigen\n';
+			h += '  fdisk -l [dev]     - Partitionstabelle anzeigen\n';
+			h += '  parted [dev] print - Partitionstabelle strukturiert\n';
+			h += '  hdparm -I [dev]    - Geraete-Info/Serial\n\n';
+			h += 'Imaging:\n';
+			h += '  dd if=... of=...   - Image erstellen\n';
+			h += '  dc3dd if=...       - Forensisches dd mit Hash\n';
+			h += '  dcfldd if=...      - Forensisches dd Alternative\n';
+			h += '  ewfacquire [dev]   - E01-Image erstellen\n\n';
+			h += 'Mount:\n';
+			h += '  mount -o ...       - Dateisystem einhaengen\n';
+			h += '  umount [path]      - Dateisystem aushaengen\n';
+			h += '  losetup -a         - Loop-Devices anzeigen\n';
+			h += '  ewfmount [E01]     - E01-Image mounten\n\n';
+			h += 'Analyse:\n';
+			h += '  xxd -l N [file]   - Hex-Dump erstellen\n';
+			h += '  hexdump -C [file]  - Hex-Dump (kanonisch)\n';
+			h += '  fls -r [image]     - Sleuth Kit: Dateiliste\n';
+			h += '  mmls [image]       - Sleuth Kit: Partitions-Layout\n';
+			h += '  icat [image] [ino]  - Sleuth Kit: Inode extrahieren\n';
+			h += '  istat [image] [ino] - Sleuth Kit: Inode-Statistiken\n\n';
+			h += 'Verwaltung:\n';
+			h += '  script [file]      - Protokollierung starten\n';
+			h += '  blkid [dev]        - Block-Geraete-UUID\n';
+			h += '  blockdev --setro   - Read-only setzen\n';
+		}
+
+		if (envId === 'netzwerk-forensik') {
+			h += 'Netzwerk-Diagnose:\n';
+			h += '  ping [-c N] [host] - Erreichbarkeit testen\n';
+			h += '  traceroute [host]  - Weg zum Ziel zeigen\n';
+			h += '  mtr [host]         - traceroute + ping live\n\n';
+			h += 'DNS:\n';
+			h += '  dig [domain] [typ] - DNS-Records abfragen\n';
+			h += '  nslookup [domain]  - Einfache DNS-Abfrage\n\n';
+			h += 'HTTP:\n';
+			h += '  curl [url]         - HTTP-Request senden\n';
+			h += '  wget [url]         - Download\n\n';
+			h += 'Netzwerk-Info:\n';
+			h += '  ip addr|route|neigh - Netzwerk-Info\n';
+			h += '  ifconfig           - Interface-Info (legacy)\n';
+			h += '  ss [-tunap]        - Verbindungen anzeigen\n';
+			h += '  netstat            - Verbindungen (legacy)\n';
+			h += '  arp [-a]           - ARP-Tabelle\n\n';
+			h += 'Sicherheit:\n';
+			h += '  nmap [target]      - Port-Scan\n';
+			h += '  tshark [opts]      - Traffic mitschneiden\n';
+			h += '  tcpdump [opts]     - Traffic Capture\n\n';
+			h += 'Kryptographie:\n';
+			h += '  openssl s_client   - TLS-Zertifikat pruefen\n';
+			h += '  ssh-keygen -t rsa  - SSH-Schluessel erstellen\n';
+			h += '  gpg --gen-key      - GPG-Schluessel erstellen\n';
+		}
+
 		return [{ text: h, type: 'info' }];
 	},
 
@@ -224,7 +399,9 @@ var TerminalCommands = {
 			'sdb': 'Maerz 15 09:25', 'sdb1': 'Maerz 15 09:25',
 			'nvme0n1': 'Maerz 10 12:00', 'nvme0n1p1': 'Maerz 10 12:00',
 			'loop0': 'Maerz 15 09:31', 'loop1': 'Maerz 15 09:31',
-			'zero': 'Maerz 10 12:00', 'null': 'Maerz 10 12:00'
+			'zero': 'Maerz 10 12:00', 'null': 'Maerz 10 12:00',
+			'hosts': 'Maerz 15 08:00', 'resolv.conf': 'Maerz 15 08:00',
+			'home': 'Maerz 14 08:00', 'etc': 'Maerz 15 08:00', 'tmp': 'Maerz 15 08:00'
 		};
 		for (var i = 0; i < items.length; i++) {
 			var childPath = path === '/' ? '/' + items[i] : path + '/' + items[i];
@@ -426,13 +603,16 @@ var TerminalCommands = {
 	},
 
 	uname: function(ctx, args) {
-		if (args.indexOf('-a') !== -1) return [{ text: 'Linux forensik-workstation 6.1.0-kali9-amd64 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux', type: null }];
+		var envId = ctx.environment || 'linux-forensik';
+		var hostname = envId === 'netzwerk-forensik' ? 'netzwerk-lab' : 'forensik-workstation';
+		var kernel = envId === 'netzwerk-forensik' ? '6.1.0-generic' : '6.1.0-kali9-amd64';
+		if (args.indexOf('-a') !== -1) return [{ text: 'Linux ' + hostname + ' ' + kernel + ' #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux', type: null }];
 		return [{ text: 'Linux', type: null }];
 	},
 
 	which: function(ctx, args) {
 		if (!args[0]) return [{ text: 'which: Befehlsname fehlt', type: 'error' }];
-		var cmds = { dd: '/usr/bin/dd', dc3dd: '/usr/bin/dc3dd', dcfldd: '/usr/bin/dcfldd', ewfacquire: '/usr/bin/ewfacquire', sha256sum: '/usr/bin/sha256sum', md5sum: '/usr/bin/md5sum', fls: '/usr/bin/fls', xxd: '/usr/bin/xxd', strings: '/usr/bin/strings', hdparm: '/usr/sbin/hdparm', nvme: '/usr/sbin/nvme' };
+		var cmds = { dd: '/usr/bin/dd', dc3dd: '/usr/bin/dc3dd', dcfldd: '/usr/bin/dcfldd', ewfacquire: '/usr/bin/ewfacquire', sha256sum: '/usr/bin/sha256sum', md5sum: '/usr/bin/md5sum', fls: '/usr/bin/fls', xxd: '/usr/bin/xxd', strings: '/usr/bin/strings', hdparm: '/usr/sbin/hdparm', nvme: '/usr/sbin/nvme', ping: '/usr/bin/ping', traceroute: '/usr/bin/traceroute', dig: '/usr/bin/dig', nmap: '/usr/bin/nmap', curl: '/usr/bin/curl', wget: '/usr/bin/wget', ssh: '/usr/bin/ssh', openssl: '/usr/bin/openssl' };
 		if (cmds[args[0]]) return [{ text: cmds[args[0]], type: null }];
 		return [{ text: args[0] + ' nicht gefunden', type: 'error' }];
 	},
@@ -514,7 +694,7 @@ var TerminalCommands = {
 
 	md5: function(ctx, args) {
 		if (!args[0]) return [{ text: 'md5sum: Dateiname fehlt', type: 'error' }];
-		return [{ text: 'd41d8cd98f00b204e9812345678901234  ' + args[0], type: 'success' }];
+		return [{ text: 'd41d8cd98f00b204e9800998ecf8427e  ' + args[0], type: 'success' }];
 	},
 
 	mount: function(ctx, args) {
@@ -753,7 +933,8 @@ var TerminalCommands = {
 			'hex': 'ASCII text',
 			'xlsx': 'Microsoft Excel 2007+',
 			'pdf': 'PDF document, version 1.7',
-			'docx': 'Microsoft Word 2007+'
+			'docx': 'Microsoft Word 2007+',
+			'conf': 'ASCII text'
 		};
 		var ftype = typeMap[ext] || 'data';
 		return [{ text: path + ': ' + ftype, type: null }];
@@ -795,7 +976,7 @@ var TerminalCommands = {
 			return [{ text: lines.join('\n'), type: null }];
 		}
 		if (entry && entry.type === 'dir') return [{ text: 'head: Fehler beim Lesen von \'' + file + '\': Ist ein Verzeichnis', type: 'error' }];
-		if (entry) return [{ text: '[' + path + ': Binärdaten - erste ' + n + ' Zeilen nicht darstellbar]', type: 'info' }];
+		if (entry) return [{ text: '[' + path + ': Bin\u00e4rdaten - erste ' + n + ' Zeilen nicht darstellbar]', type: 'info' }];
 		return [{ text: 'head: ' + file + ': Datei nicht gefunden', type: 'error' }];
 	},
 
@@ -813,7 +994,7 @@ var TerminalCommands = {
 			return [{ text: lines.slice(start).join('\n'), type: null }];
 		}
 		if (entry && entry.type === 'dir') return [{ text: 'tail: Fehler beim Lesen von \'' + file + '\': Ist ein Verzeichnis', type: 'error' }];
-		if (entry) return [{ text: '[' + path + ': Binärdaten - letzte ' + n + ' Zeilen nicht darstellbar]', type: 'info' }];
+		if (entry) return [{ text: '[' + path + ': Bin\u00e4rdaten - letzte ' + n + ' Zeilen nicht darstellbar]', type: 'info' }];
 		return [{ text: 'tail: ' + file + ': Datei nicht gefunden', type: 'error' }];
 	},
 
@@ -954,6 +1135,366 @@ var TerminalCommands = {
 		var entry = ctx.filesystem[path];
 		if (!entry) return [{ text: 'shasum: ' + file + ': Datei nicht gefunden', type: 'error' }];
 		return [{ text: 'a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456  ' + file, type: 'success' }];
+	},
+
+	resolveIp: function(ctx, host) {
+		var net = ctx.network;
+		if (!net || !net.dnsMap) return '10.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 254 + 1);
+		var clean = host.replace(/https?:\/\//, '').replace(/\/.*/, '');
+		return net.dnsMap[clean] || net.dnsMap[host] || '10.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 254 + 1);
+	},
+
+	cmdPing: function(ctx, args) {
+		if (!args[0]) return [{ text: 'Usage: ping [-c count] [host]', type: 'error' }];
+		var count = 4;
+		var host = null;
+		for (var i = 0; i < args.length; i++) {
+			if (args[i] === '-c' && args[i + 1]) { count = parseInt(args[i + 1]) || 4; i++; }
+			else if (args[i] === '-W' || args[i] === '-i') { i++; }
+			else if (!host && args[i].charAt(0) !== '-') { host = args[i]; }
+		}
+		if (!host) return [{ text: 'Usage: ping [-c count] [host]', type: 'error' }];
+		var self = TerminalCommands;
+		var ip = self.resolveIp(ctx, host);
+		var output = 'PING ' + host + ' (' + ip + ') 56(84) bytes of data.\n';
+		for (var j = 1; j <= count; j++) {
+			var time = (Math.random() * 20 + 5).toFixed(1);
+			output += '64 bytes from ' + ip + ': icmp_seq=' + j + ' ttl=64 time=' + time + ' ms\n';
+		}
+		output += '\n--- ' + host + ' ping statistics ---\n';
+		output += count + ' packets transmitted, ' + count + ' received, 0% packet loss';
+		return [{ text: output, type: null }];
+	},
+
+	cmdTraceroute: function(ctx, args) {
+		if (!args[0]) return [{ text: 'Usage: traceroute [host]', type: 'error' }];
+		var self = TerminalCommands;
+		var host = args[0];
+		var ip = self.resolveIp(ctx, host);
+		var output = 'traceroute to ' + host + ' (' + ip + '), 30 hops max\n';
+		var hops = ['192.168.1.1', '10.0.0.1', '62.154.3.1', '62.154.3.17', ip];
+		for (var i = 0; i < hops.length; i++) {
+			var t1 = (Math.random() * 10 + (i * 3)).toFixed(3);
+			var t2 = (Math.random() * 10 + (i * 3)).toFixed(3);
+			var t3 = (Math.random() * 10 + (i * 3)).toFixed(3);
+			output += ' ' + (i + 1) + '  ' + hops[i] + '  ' + t1 + ' ms  ' + t2 + ' ms  ' + t3 + ' ms\n';
+		}
+		return [{ text: output.trimEnd(), type: null }];
+	},
+
+	cmdMtr: function(ctx, args) {
+		if (!args[0]) return [{ text: 'Usage: mtr [host]', type: 'error' }];
+		var self = TerminalCommands;
+		var ip = self.resolveIp(ctx, args[0]);
+		var output = 'Start: ' + new Date().toLocaleString('de-DE') + '\n';
+		output += 'HOST: netzwerk-lab                Loss%   Snt   Last   Avg  Best  Wrst\n';
+		var hops = ['192.168.1.1', '10.0.0.1', '62.154.3.1', ip];
+		for (var i = 0; i < hops.length; i++) {
+			var avg = (Math.random() * 15 + (i * 3)).toFixed(1);
+			output += '  ' + (i + 1) + '.|-- ' + hops[i] + '  0.0%    10  ' + avg + '  ' + avg + '  ' + (avg - 2).toFixed(1) + '  ' + (parseFloat(avg) + 5).toFixed(1) + '\n';
+		}
+		return [{ text: output.trimEnd(), type: null }];
+	},
+
+	cmdDig: function(ctx, args) {
+		if (!args[0]) return [{ text: 'Usage: dig [domain] [type]', type: 'error' }];
+		var domain = args[0];
+		var type = 'A';
+		for (var i = 1; i < args.length; i++) {
+			if (!args[i].match(/^[@+]/) && args[i].match(/^[A-Z]+$/i)) {
+				type = args[i].toUpperCase();
+			}
+		}
+		var self = TerminalCommands;
+		var ip = self.resolveIp(ctx, domain);
+		var output = ';; Got answer:\n';
+		output += ';; ->>HEADER<<- opcode: QUERY, status: NOERROR\n';
+		output += ';; QUESTION SECTION:\n';
+		output += ';' + domain + '.\t\tIN\t' + type + '\n';
+		output += ';; ANSWER SECTION:\n';
+		if (type === 'A') {
+			output += domain + '.\t\t300\tIN\tA\t' + ip + '\n';
+		} else if (type === 'MX') {
+			output += domain + '.\t\t300\tIN\tMX\t10 mail.' + domain + '.\n';
+		} else if (type === 'NS') {
+			output += domain + '.\t\t300\tIN\tNS\tns1.' + domain + '.\n';
+			output += domain + '.\t\t300\tIN\tNS\tns2.' + domain + '.\n';
+		} else if (type === 'AAAA') {
+			output += domain + '.\t\t300\tIN\tAAAA\t2001:db8::1\n';
+		} else if (type === 'TXT') {
+			output += domain + '.\t\t300\tIN\tTXT\t"v=spf1 include:_' + domain + ' ~all"\n';
+		} else if (type === 'CNAME') {
+			output += domain + '.\t\t300\tIN\tCNAME\twww.' + domain + '.\n';
+		} else {
+			output += ';; No Answer for type ' + type + '\n';
+		}
+		output += ';; Query time: ' + Math.floor(Math.random() * 30 + 5) + ' msec';
+		return [{ text: output, type: null }];
+	},
+
+	cmdNslookup: function(ctx, args) {
+		if (!args[0]) return [{ text: 'Usage: nslookup [domain]', type: 'error' }];
+		var self = TerminalCommands;
+		var ip = self.resolveIp(ctx, args[0]);
+		var output = 'Server:\t\t192.168.1.1\n';
+		output += 'Address:\t192.168.1.1#53\n\n';
+		output += 'Non-authoritative answer:\n';
+		output += 'Name:\t' + args[0] + '\n';
+		output += 'Address: ' + ip;
+		return [{ text: output, type: null }];
+	},
+
+	cmdCurl: function(ctx, args) {
+		if (!args[0]) return [{ text: 'Usage: curl [url]', type: 'error' }];
+		var url = args[0];
+		if (args.indexOf('-I') !== -1 || args.indexOf('--head') !== -1) {
+			var output = 'HTTP/1.1 200 OK\n';
+			output += 'Content-Type: text/html; charset=UTF-8\n';
+			output += 'Content-Length: 1256\n';
+			output += 'Server: nginx/1.24';
+			return [{ text: output, type: null }];
+		}
+		var output = '<!DOCTYPE html><html><head><title>' + url + '</title></head>\n';
+		output += '<body><h1>Willkommen auf ' + url + '</h1></body></html>';
+		return [{ text: output, type: null }];
+	},
+
+	cmdWget: function(ctx, args) {
+		if (!args[0]) return [{ text: 'Usage: wget [url]', type: 'error' }];
+		var self = TerminalCommands;
+		var ip = self.resolveIp(ctx, args[0]);
+		var output = '--' + new Date().toISOString() + '--  ' + args[0] + '\n';
+		output += 'Resolving... ' + ip + '\n';
+		output += 'Connecting... connected.\n';
+		output += 'HTTP request sent, awaiting response... 200 OK\n';
+		output += 'Saved \'index.html\'';
+		return [{ text: output, type: null }];
+	},
+
+	cmdIp: function(ctx, args) {
+		var sub = args[0] || 'addr';
+		var net = ctx.network;
+		if (!net) return [{ text: 'ip: Netzwerk-Simulation nicht verfuegbar', type: 'error' }];
+
+		if (sub === 'addr' || sub === 'a') {
+			var output = '';
+			var idx = 1;
+			for (var name in net.interfaces) {
+				var iface = net.interfaces[name];
+				output += idx + ': ' + name + ': <BROADCAST,MULTICAST,UP> mtu 1500 qdisc fq_codel state ' + iface.state + '\n';
+				output += '    link/ether ' + iface.mac + ' brd ff:ff:ff:ff:ff:ff\n';
+				output += '    inet ' + iface.ipv4 + ' scope global ' + name + '\n';
+				if (iface.ipv6) output += '    inet6 ' + iface.ipv6 + ' scope link\n';
+				if (idx === 1) output += '\n';
+				idx++;
+			}
+			return [{ text: output.trimEnd(), type: null }];
+		}
+		if (sub === 'route' || sub === 'r') {
+			var output = '';
+			for (var i = 0; i < net.routing.length; i++) {
+				var r = net.routing[i];
+				output += r.dest + (r.via ? ' via ' + r.via : '') + ' dev ' + r.dev + ' proto ' + r.proto + '\n';
+			}
+			return [{ text: output.trimEnd(), type: null }];
+		}
+		if (sub === 'neigh' || sub === 'n') {
+			var output = '';
+			for (var i = 0; i < net.arp.length; i++) {
+				var entry = net.arp[i];
+				output += entry.ip + ' dev ' + entry.dev + ' lladdr ' + entry.mac + ' ' + entry.state + '\n';
+			}
+			return [{ text: output.trimEnd(), type: null }];
+		}
+		return [{ text: 'Usage: ip [addr|route|neigh]', type: null }];
+	},
+
+	cmdIfconfig: function(ctx, args) {
+		return this.cmdIp(ctx, ['addr']);
+	},
+
+	cmdSs: function(ctx, args) {
+		var output = 'Netid  State   Recv-Q Send-Q  Local Address:Port   Peer Address:Port\n';
+		output += 'tcp    ESTAB   0      0        192.168.1.100:42312  142.250.185.206:443\n';
+		output += 'tcp    ESTAB   0      0        192.168.1.100:38910  151.101.1.140:443\n';
+		output += 'tcp    LISTEN  0      128            0.0.0.0:22         0.0.0.0:*\n';
+		output += 'tcp    LISTEN  0      511            0.0.0.0:80         0.0.0.0:*\n';
+		output += 'udp    UNCONN  0      0        192.168.1.100:68     192.168.1.1:67';
+		return [{ text: output, type: null }];
+	},
+
+	cmdNmap: function(ctx, args) {
+		if (!args[0]) return [{ text: 'Usage: nmap [target]', type: 'error' }];
+		var self = TerminalCommands;
+		var ip = self.resolveIp(ctx, args[0]);
+		var output = 'Starting Nmap 7.94 ( https://nmap.org )\n';
+		output += 'Nmap scan report for ' + args[0] + ' (' + ip + ')\n';
+		output += 'Host is up (0.0034s latency).\n';
+		output += 'PORT     STATE    SERVICE\n';
+		output += '22/tcp   open     ssh\n';
+		output += '53/tcp   open     domain\n';
+		output += '80/tcp   open     http\n';
+		output += '443/tcp  open     https\n';
+		output += 'Nmap done: 1 IP address (1 host up) scanned in 2.34 seconds';
+		return [{ text: output, type: null }];
+	},
+
+	cmdTshark: function(ctx, args) {
+		var output = 'Capturing on \'eth0\'\n';
+		output += '  1 0.000000 192.168.1.100 \u2192 192.168.1.1   DNS 74 Standard query A google.com\n';
+		output += '  2 0.015234 192.168.1.1   \u2192 192.168.1.100 DNS 90 Response A 142.250.185.206\n';
+		output += '  3 0.020000 192.168.1.100 \u2192 142.250.185.206 TCP 66 42312\u2192443 [SYN]\n';
+		output += '  4 0.035000 142.250.185.206 \u2192 192.168.1.100 TCP 66 443\u219242312 [SYN,ACK]\n';
+		output += '  5 0.036000 192.168.1.100 \u2192 142.250.185.206 TCP 54 42312\u2192443 [ACK]';
+		return [{ text: output, type: null }];
+	},
+
+	cmdTcpdump: function(ctx, args) {
+		var output = 'tcpdump: verbose output suppressed, use -v for full decode\n';
+		output += 'listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n';
+		output += '12:34:56.001 IP 192.168.1.100.42312 > 142.250.185.206.443: Flags [S]\n';
+		output += '12:34:56.015 IP 142.250.185.206.443 > 192.168.1.100.42312: Flags [S.]';
+		return [{ text: output, type: null }];
+	},
+
+	cmdArp: function(ctx, args) {
+		var net = ctx.network;
+		if (!net) return [{ text: 'arp: Netzwerk-Simulation nicht verfuegbar', type: 'error' }];
+		var output = '';
+		for (var i = 0; i < net.arp.length; i++) {
+			var entry = net.arp[i];
+			output += '? (' + entry.ip + ') at ' + entry.mac + ' [ether]   on ' + entry.dev + '\n';
+		}
+		return [{ text: output.trimEnd(), type: null }];
+	},
+
+	cmdOpenssl: function(ctx, args) {
+		if (args.length === 0) {
+			return [{ text: 'openssl: Nutzung: openssl s_client -connect host:port', type: null }];
+		}
+		if (args[0] === 's_client') {
+			var host = args[2] || 'example.com:443';
+			var domain = host.split(':')[0];
+			var output = 'CONNECTED(00000003)\n';
+			output += 'depth=2 C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert Global Root CA\n';
+			output += 'depth=1 C = US, O = Let\'s Encrypt, CN = R3\n';
+			output += 'depth=0 CN = ' + domain + '\n\n';
+			output += 'Certificate chain\n';
+			output += ' 0 s:CN = ' + domain + '\n';
+			output += '   i:C = US, O = Let\'s Encrypt, CN = R3\n';
+			output += '   a:PKEY: id-ecPublicKey, 256 (bit); sigalg: RSA-SHA256\n';
+			output += '   v:NotBefore: Jan 15 00:00:00 2026 GMT; NotAfter: Apr 15 00:00:00 2026 GMT';
+			return [{ text: output, type: null }];
+		}
+		if (args[0] === 'x509') {
+			return [{ text: 'notBefore=Jan 15 00:00:00 2026 GMT\nnotAfter=Apr 15 00:00:00 2026 GMT', type: null }];
+		}
+		if (args[0] === 'genrsa') {
+			var output = 'Generating RSA private key, 2048 bit long modulus (2 primes)\n';
+			output += '................................+++++\n';
+			output += '......................+++++\n';
+			output += 'e is 65537 (0x10001)\n';
+			output += '-----BEGIN RSA PRIVATE KEY-----\n';
+			output += 'MIIEowIBAAKCAQEA0Z3VS5JJcds3xfn/ygWyF8PbnGy0AHB7...\n';
+			output += '... (private key erstellt) ...\n';
+			output += '-----END RSA PRIVATE KEY-----\n';
+			output += 'RSA Private Key erstellt: private.key (2048 Bit)';
+			return [{ text: output, type: null }];
+		}
+		if (args[0] === 'rsa') {
+			var output = 'Private-Key: (2048 bit, 2 primes)\n';
+			output += 'modulus:\n';
+			output += '    00:d3:9d:d5:4b:92:49:71:db:37:c5:f9:ff:ca:05:\n';
+			output += '    b2:17:c3:db:9c:6c:b4:00:70:7b:3e:a8:c5:91:\n';
+			output += 'publicExponent: 65537 (0x10001)\n';
+			output += 'privateExponent: (versteckt)\n';
+			output += 'key der Daten: 2048 Bit RSA';
+			return [{ text: output, type: null }];
+		}
+		if (args[0] === 'req' && args.indexOf('-newkey') !== -1) {
+			var output = 'Generating a RSA private key\n';
+			output += '..........+++++\n';
+			output += '......+++++\n';
+			output += 'writing new private key to key.pem\n';
+			output += '-----\n';
+			output += 'Country Name (2 letter code) [AU]:DE\n';
+			output += 'State or Province Name [Some-State]:Bayern\n';
+			output += 'Organization Name [Internet Widgits Pty Ltd]:Mein Training\n';
+			output += 'Common Name (e.g. server FQDN) []:netzwerk-lab.local\n';
+			output += 'Zertifikatsanfrage erstellt: cert.pem';
+			return [{ text: output, type: null }];
+		}
+		return [{ text: 'openssl: Unbekannter Befehl. Versuche: openssl s_client -connect host:443', type: null }];
+	},
+
+	cmdSshKeygen: function(ctx, args) {
+		if (args.indexOf('-t') !== -1 && args.indexOf('rsa') !== -1) {
+			var output = 'Generating public/private rsa key pair.\n';
+			output += 'Enter file in which to save the key (/home/analyst/.ssh/id_rsa):\n';
+			output += 'Your identification has been saved in /home/analyst/.ssh/id_rsa\n';
+			output += 'Your public key has been saved in /home/analyst/.ssh/id_rsa.pub\n';
+			output += 'The key fingerprint is:\n';
+			output += 'SHA256:xK3a9fG2bH8cJ1dE5fL0mN6oP4qR7sT2uV9wX3yZ analyst@netzwerk-lab\n';
+			output += 'The key\'s randomart image is:\n';
+			output += '+---[RSA 3072]----+\n';
+			output += '|    .o+B=o.      |\n';
+			output += '|   . + =.+ .     |\n';
+			output += '|    + * o .      |\n';
+			output += '|     = B .       |\n';
+			output += '|    . = S        |\n';
+			output += '+----[SHA256]-----+';
+			return [{ text: output, type: null }];
+		}
+		if (args.indexOf('-t') !== -1 && args.indexOf('ed25519') !== -1) {
+			var output = 'Generating public/private ed25519 key pair.\n';
+			output += 'Your identification has been saved in /home/analyst/.ssh/id_ed25519\n';
+			output += 'Your public key has been saved in /home/analyst/.ssh/id_ed25519.pub\n';
+			output += 'SHA256:aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0u analyst@netzwerk-lab';
+			return [{ text: output, type: null }];
+		}
+		return [{ text: 'ssh-keygen: Nutzung: ssh-keygen -t rsa  oder  ssh-keygen -t ed25519', type: null }];
+	},
+
+	cmdGpg: function(ctx, args) {
+		if (args[0] === '--gen-key' || args[0] === '--full-generate-key') {
+			var output = 'gpg (GnuPG) 2.2.40; Copyright (C) 2023 g10 Code GmbH\n';
+			output += 'Please select what kind of key you want:\n';
+			output += '   (1) RSA and RSA (default)\n';
+			output += '   (2) DSA and Elgamal\n';
+			output += '   (3) DSA (sign only)\n';
+			output += '   (4) RSA (sign only)\n';
+			output += 'Your selection? 1\n';
+			output += 'RSA keys may be between 1024 and 4096 bits long.\n';
+			output += 'What keysize do you want? (3072) 4096\n';
+			output += 'Requested keysize is 4096 bits\n';
+			output += 'Key expires at: nie\n';
+			output += 'GPG-Schl\u00fcsselpaar erstellt: RSA 4096 Bit\n';
+			output += 'Public Key: /home/analyst/.gnupg/public.key\n';
+			output += 'Private Key: /home/analyst/.gnupg/private.key';
+			return [{ text: output, type: null }];
+		}
+		if (args[0] === '--list-keys') {
+			var output = '/home/analyst/.gnupg/pubring.kbx\n';
+			output += '-------------------------------\n';
+			output += 'pub   rsa4096 2026-04-12 [SC]\n';
+			output += '      ABC1DEF2GHI3JKL4MNO5PQR6STU7VWX8YZ9\n';
+			output += 'uid        [ ultimativ ] Analyst <analyst@netzwerk-lab.local>\n';
+			output += 'sub   rsa4096 2026-04-12 [E]';
+			return [{ text: output, type: null }];
+		}
+		if (args[0] === '--export') {
+			var output = '-----BEGIN PGP PUBLIC KEY BLOCK-----\n';
+			output += 'mDMEZxMhRxYJKwYBBAHaRw8BAQdAXYZ...\n';
+			output += '... (Public Key exportiert) ...\n';
+			output += '-----END PGP PUBLIC KEY BLOCK-----';
+			return [{ text: output, type: null }];
+		}
+		return [{ text: 'gpg: Nutzung: gpg --gen-key | --list-keys | --export', type: null }];
+	},
+
+	cmdHostname: function(ctx, args) {
+		var envId = ctx.environment || 'linux-forensik';
+		return [{ text: envId === 'netzwerk-forensik' ? 'netzwerk-lab' : 'forensik-workstation', type: null }];
 	}
 };
 
@@ -967,17 +1508,76 @@ function InteractiveTerminal(containerId) {
 	this.history = [];
 	this.historyIndex = -1;
 	this.achievementSystem = null;
-	this.filesystem = TerminalSharedFS;
-	this.devices = TerminalSharedDevices;
+	this.filesystem = null;
+	this.devices = null;
 	this.mountedDevices = {};
 	this.scriptActive = false;
 	this.originalExecute = null;
+	this.environment = 'linux-forensik';
+	this.network = null;
+	this.envStates = {};
+	this._initEnvState('linux-forensik');
+	this._applyEnvState('linux-forensik');
 }
+
+InteractiveTerminal.prototype._initEnvState = function(envId) {
+	if (this.envStates[envId]) return;
+	var state = { currentPath: '/', mountedDevices: {}, scriptActive: false, scriptFile: null, scriptLines: [] };
+	if (envId === 'linux-forensik') {
+		state.filesystem = JSON.parse(JSON.stringify(TerminalSharedFS));
+		state.devices = JSON.parse(JSON.stringify(TerminalSharedDevices));
+		state.network = null;
+	} else if (envId === 'netzwerk-forensik') {
+		state.filesystem = JSON.parse(JSON.stringify(TerminalSharedNetworkFS));
+		state.devices = {};
+		state.network = JSON.parse(JSON.stringify(TerminalSharedNetwork));
+	}
+	this.envStates[envId] = state;
+};
+
+InteractiveTerminal.prototype._applyEnvState = function(envId) {
+	var state = this.envStates[envId];
+	if (!state) return;
+	this.currentPath = state.currentPath;
+	this.mountedDevices = state.mountedDevices;
+	this.scriptActive = state.scriptActive;
+	this.scriptFile = state.scriptFile;
+	this.scriptLines = state.scriptLines;
+	this.filesystem = state.filesystem;
+	this.devices = state.devices;
+	this.network = state.network;
+};
+
+InteractiveTerminal.prototype._saveEnvState = function() {
+	if (!this.environment || !this.envStates[this.environment]) return;
+	var state = this.envStates[this.environment];
+	state.currentPath = this.currentPath;
+	state.mountedDevices = this.mountedDevices;
+	state.scriptActive = this.scriptActive;
+	state.scriptFile = this.scriptFile;
+	state.scriptLines = this.scriptLines;
+	state.filesystem = this.filesystem;
+	state.devices = this.devices;
+	state.network = this.network;
+};
+
+InteractiveTerminal.prototype.setEnvironment = function(envId) {
+	if (!TerminalEnvConfig[envId]) return;
+	if (this.environment === envId) return;
+	this._saveEnvState();
+	this._initEnvState(envId);
+	this._applyEnvState(envId);
+	this.environment = envId;
+	this.updatePrompt();
+	var titleEl = this.container ? this.container.querySelector('.t-title') : null;
+	if (titleEl) titleEl.textContent = TerminalEnvConfig[envId].title;
+};
 
 InteractiveTerminal.prototype.init = function() {
 	this.container = document.getElementById(this.containerId);
 	if (!this.container) return false;
-	this.container.innerHTML = '<div class="terminal-container"><div class="t-header"><span class="t-title">FORENSIK-TERMINAL</span><div class="t-header-actions"><span class="t-status">Bereit</span><button class="t-minimize-btn" title="Terminal minimieren">&#x2212;</button></div></div><div class="t-body"></div><div class="t-input-wrap"><span class="t-prompt-label">' + this.getPrompt() + '</span><div class="t-input-field"><span class="t-text-mirror"></span><span class="t-block-cursor"></span><input type="text" class="t-input" autocomplete="off"></div></div></div>';
+	var config = TerminalEnvConfig[this.environment] || TerminalEnvConfig['linux-forensik'];
+	this.container.innerHTML = '<div class="terminal-container"><div class="t-header"><span class="t-title">' + config.title + '</span><div class="t-header-actions"><span class="t-status">Bereit</span><button class="t-minimize-btn" title="Terminal minimieren">&#x2212;</button></div></div><div class="t-body"></div><div class="t-input-wrap"><span class="t-prompt-label">' + this.getPrompt() + '</span><div class="t-input-field"><span class="t-text-mirror"></span><span class="t-block-cursor"></span><input type="text" class="t-input" autocomplete="off"></div></div></div>';
 	this.outputEl = this.container.querySelector('.t-body');
 	this.inputEl = this.container.querySelector('.t-input');
 	this.promptEl = this.container.querySelector('.t-prompt-label');
@@ -998,7 +1598,7 @@ InteractiveTerminal.prototype.init = function() {
 			if (e.target.tagName !== 'BUTTON') self.inputEl.focus();
 		});
 	}
-	this.displayOutput('Willkommen im Forensik-Terminal. Tippe "help" fuer alle Befehle.\n');
+	this.displayOutput(config.welcomeMsg);
 	return true;
 };
 
@@ -1061,7 +1661,8 @@ InteractiveTerminal.prototype.scrollToBottom = function() {
 };
 
 InteractiveTerminal.prototype.getPrompt = function() {
-	return 'analyst@forensik:' + this.currentPath + '$ ';
+	if (this.environment === 'netzwerk-forensik') return 'analyst@netzwerk-lab:' + this.currentPath + '$ ';
+	return 'analyst@forensik-workstation:' + this.currentPath + '$ ';
 };
 
 InteractiveTerminal.prototype.updatePrompt = function() {
@@ -1090,6 +1691,7 @@ InteractiveTerminal.prototype.executeCommand = function(cmdLine) {
 	var parts = cmdLine.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
 	var cmd = parts[0];
 	this.trackCommand(cmd);
+	var self = this;
 	var ctx = {
 		currentPath: this.currentPath,
 		filesystem: this.filesystem,
@@ -1099,6 +1701,8 @@ InteractiveTerminal.prototype.executeCommand = function(cmdLine) {
 		scriptActive: this.scriptActive,
 		scriptFile: this.scriptFile || null,
 		scriptLines: this.scriptLines || [],
+		environment: this.environment,
+		network: this.network,
 		resolvePath: function(p) { return TerminalCommands.resolvePath(ctx.currentPath, p); }
 	};
 	var result = TerminalCommands.executeLine(cmdLine, ctx);
@@ -1133,8 +1737,8 @@ function InlineTerminal(container) {
 	this.currentPath = '/';
 	this.history = [];
 	this.historyIndex = -1;
-	this.filesystem = TerminalSharedFS;
-	this.devices = TerminalSharedDevices;
+	this.filesystem = null;
+	this.devices = null;
 	this.mountedDevices = {};
 	this.scriptActive = false;
 	this.suggestion = '';
@@ -1145,7 +1749,46 @@ function InlineTerminal(container) {
 	this.wrapperEl = null;
 	this.boundKeydown = null;
 	this.boundSuggestionClick = null;
+	this.environment = 'linux-forensik';
+	this.network = null;
+	this._detectEnvironment();
 }
+
+InlineTerminal.prototype._detectEnvironment = function() {
+	var envId = 'linux-forensik';
+	if (typeof App !== 'undefined' && App.currentLab) {
+		envId = App.currentLab;
+	}
+	if (TerminalEnvConfig[envId]) {
+		this.environment = envId;
+	}
+	if (this.environment === 'netzwerk-forensik') {
+		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedNetworkFS));
+		this.devices = {};
+		this.network = JSON.parse(JSON.stringify(TerminalSharedNetwork));
+	} else {
+		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedFS));
+		this.devices = JSON.parse(JSON.stringify(TerminalSharedDevices));
+		this.network = null;
+	}
+};
+
+InlineTerminal.prototype.setEnvironment = function(envId) {
+	if (!TerminalEnvConfig[envId]) return;
+	this.environment = envId;
+	if (envId === 'netzwerk-forensik') {
+		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedNetworkFS));
+		this.devices = {};
+		this.network = JSON.parse(JSON.stringify(TerminalSharedNetwork));
+	} else {
+		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedFS));
+		this.devices = JSON.parse(JSON.stringify(TerminalSharedDevices));
+		this.network = null;
+	}
+	this.currentPath = '/';
+	this.mountedDevices = {};
+	this.updatePrompt();
+};
 
 InlineTerminal.prototype.init = function() {
 	var self = this;
@@ -1254,6 +1897,8 @@ InlineTerminal.prototype.executeCommand = function(cmdLine) {
 		scriptActive: this.scriptActive,
 		scriptFile: this.scriptFile || null,
 		scriptLines: this.scriptLines || [],
+		environment: this.environment,
+		network: this.network,
 		resolvePath: function(p) { return TerminalCommands.resolvePath(ctx.currentPath, p); }
 	};
 	var result = TerminalCommands.executeLine(cmdLine, ctx);
@@ -1301,7 +1946,8 @@ InlineTerminal.prototype.displayInput = function(cmd) {
 };
 
 InlineTerminal.prototype.getPrompt = function() {
-	return 'analyst@forensik:' + this.currentPath + '$ ';
+	if (this.environment === 'netzwerk-forensik') return 'analyst@netzwerk-lab:' + this.currentPath + '$ ';
+	return 'analyst@forensik-workstation:' + this.currentPath + '$ ';
 };
 
 InlineTerminal.prototype.updatePrompt = function() {
