@@ -1,0 +1,8 @@
+Forensik Training - Hash Integritaetspruefung
+=============================================
+Diese Datei dient zur Uebung der Hash-Verifikation.
+SHA-256 ist der primaere Standard fuer forensische Integritaetspruefung.
+Jede Aenderung, auch ein einzelnes Bit, fuehrt zu einem komplett anderen Hash.
+Das ist das sogenannte Lawinenprinzip kryptographischer Hash-Funktionen.
+In der forensischen Praxis werden Hashes vor und nach dem Imaging erstellt.
+FORENSIK{h4sh_m17ch_m4n1pul4t3d}

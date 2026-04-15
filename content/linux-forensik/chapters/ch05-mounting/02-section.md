@@ -1,0 +1,9 @@
+<h2 class="section-title"><span class="number">5.2</span> &Uuml;bung: Partitionen im Image finden</h2><p>Bevor du mountest, musst du wissen wo die Partition im Image beginnt. Das ermittelst du mit <span class="inline-code">fdisk -l</span>:</p><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code>fdisk -l /cases/case-001/images/usb-stick.img</code></pre></div><p><strong>Erwartete Ausgabe im Terminal:</strong></p><div class="code-block output-block"><div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div><pre><code>Disk /cases/case-001/images/usb-stick.img: 16 GiB, 17179869184 bytes, 33554432 sectors
+Disk model: SanDisk USB
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0xc3d4e5f6
+
+Device      Boot Start       End   Sectors  Size Id Type
+/dev/sdb1         2048  33554431  33552384   16G  b W95 FAT32</code></pre></div><div class="table-container"><table><thead><tr><th>Bestandteil</th><th>Bedeutung</th></tr></thead><tbody><tr><td><span class="inline-code">fdisk -l</span></td><td>Zeigt die Partitionstabelle des Images an</td></tr><tr><td><span class="inline-code">Start: 2048</span></td><td><strong>Der Startsektor der Partition</strong> &ndash; brauchen wir f&uuml;r den Offset</td></tr><tr><td><span class="inline-code">Sektorgr&ouml;&szlig;e: 512</span></td><td>Bytes pro Sektor &ndash; brauchen wir f&uuml;r die Berechnung</td></tr></tbody></table></div><div class="callout callout-tip"><div class="callout-header">&#128161; Offset berechnen</div><p><strong>Offset = Startsektor &times; Sektorgr&ouml;&szlig;e</strong></p><p>In diesem Fall: <span class="inline-code">2048 &times; 512 = 1048576</span></p><p>Diesen Offset brauchst du im n&auml;chsten Schritt beim Mounten.</p></div>

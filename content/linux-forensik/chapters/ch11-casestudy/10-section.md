@@ -1,0 +1,1 @@
+<h2 class="section-title"><span class="number">11.10</span> &Uuml;bung: Cleanup</h2><p>R&auml;ume auf und beende die Protokollierung:</p><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code>umount case-001/mounts/part1 && exit</code></pre></div>

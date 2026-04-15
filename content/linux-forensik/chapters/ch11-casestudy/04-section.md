@@ -1,0 +1,1 @@
+<h2 class="section-title"><span class="number">11.4</span> &Uuml;bung: Hash des Originals</h2><p>Erstelle den SHA-256 Hash VOR dem Imaging:</p><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code>sha256sum /dev/sdb &gt; case-001/hashes/original.sha256</code></pre></div>

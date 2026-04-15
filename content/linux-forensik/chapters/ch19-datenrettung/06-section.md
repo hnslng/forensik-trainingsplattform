@@ -1,0 +1,14 @@
+<h2 class="section-title"><span class="number">19.6</span> Sleuth Kit &ndash; Gel&ouml;schte Inodes finden</h2><p>Mit dem Sleuth Kit k&ouml;nnen gel&ouml;schte Inodes direkt im Dateisystem gefunden werden.</p><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code># Gel&ouml;schte Dateien auflisten (ext)
+fls -r -p image.dd | grep "(deleted)"
+
+# Alle Inodes (auch gel&ouml;schte)
+ils -e image.dd
+
+# Metadaten einer gel&ouml;schten Datei
+istat image.dd &lt;inode&gt;
+
+# Datenblock-Inhalt extrahieren
+blkcat image.dd &lt;fs_block&gt; &lt;block_nr&gt;
+
+# Gel&ouml;schte Datei wiederherstellen
+icat -r image.dd &lt;inode&gt; &gt; recovered_file.txt</code></pre></div><div class="exercise-box"><div class="exercise-header"><span class="exercise-badge">&Uuml;bung</span><span class="exercise-name">File Carving</span></div><div class="exercise-body"><div class="exercise-goal"><div class="goal-label">Ziel</div><p>Gel&ouml;schte Dateien aus einem Image rekonstruieren.</p></div><div class="exercise-steps"><ol class="numbered-list"><li>Erstelle ein Test-Image mit <code>dd if=/dev/zero of=test.img bs=1M count=50</code></li><li>Formatiere und mounte es, lege Dateien an, l&ouml;sche sie</li><li>Unmounte und f&uuml;hre <code>foremost -i test.img -o carved/</code> aus</li><li>&Uuml;berpr&uuml;fe die gefundenen Dateien im <code>carved/</code>-Verzeichnis</li><li>Dokumentiere: Wie viele Dateien wurden gefunden? Welcher Typ?</li></ol></div><div class="toggle-container"><div class="toggle-header"><span class="toggle-label">Erwartetes Ergebnis</span><span class="toggle-arrow">&#9654;</span></div><div class="toggle-content"><p>Foremost sollte mindestens die meisten Dateien anhand ihrer Header-Signaturen wiederfinden. Textdateien ohne eindeutige Signatur werden nicht erkannt &ndash; diese L&uuml;cke f&uuml;llt <code>strings</code> in Kombination mit <code>grep</code>.</p></div></div></div></div><div class="callout callout-danger"><div class="callout-header">&#9888; Typische Fehler</div><ul><li><strong>Am Original gearbeitet:</strong> Carving ver&auml;ndert keine Daten, aber Mounten schon!</li><li><strong>Falscher Dateityp:</strong> ZIP und DOCX haben dieselbe Signatur (PK-Header)</li><li><strong>Fragmentierte Dateien:</strong> Foremost kann nur zusammenh&auml;ngende Bl&ouml;cke rekonstruieren</li><li><strong>Ausgabeverzeichnis auf demselben Image:</strong> Niemals auf das untersuchte Image schreiben</li></ul></div><button class="complete-section-btn" data-chapter="ch19-datenrettung">&#9744; Kapitel als abgeschlossen markieren</button><div class="nav-buttons"><button class="nav-btn" data-target="ch18-tools">&#8592; Tools</button><button class="nav-btn" data-target="ch20-memory-forensik">Memory-Forensik &#8594;</button></div>

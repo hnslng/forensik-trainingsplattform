@@ -1,0 +1,9 @@
+<h2 class="section-title"><span class="number">1.15</span> &Uuml;bung: Pr&uuml;fen ob es geklappt hat</h2><p>Gut, du hast den Ordner erstellt. Aber wie pr&uuml;fst du ob alles da ist? Mit <span class="inline-code">tree</span> kannst du dir die ganze Struktur als Baum anzeigen lassen:</p><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code>tree case-001</code></pre></div><p><strong>Erwartete Ausgabe im Terminal:</strong></p><div class="code-block output-block"><div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div><pre><code>case-001
+&#9500;&#9472;&#9472; images
+&#9500;&#9472;&#9472; mounts
+&#9500;&#9472;&#9472; hashes
+&#9500;&#9472;&#9472; notes
+&#9500;&#9472;&#9472; reports
+&#9492;&#9472;&#9472; tools
+
+6 directories, 0 files</code></pre></div><div class="table-container"><table><thead><tr><th>Bestandteil</th><th>Bedeutung</th></tr></thead><tbody><tr><td><span class="inline-code">tree</span></td><td>Zeigt die Verzeichnisstruktur als Baumdiagramm an</td></tr><tr><td><span class="inline-code">case-001</span></td><td>Der Ordner dessen Inhalt du sehen willst</td></tr><tr><td><span class="inline-code">&#9500;&#9472;&#9472;</span></td><td>Geh zum n&auml;chsten Eintrag (noch mehr folgt)</td></tr><tr><td><span class="inline-code">&#9492;&#9472;&#9472;</span></td><td>Letzter Eintrag in diesem Ordner</td></tr></tbody></table></div><div class="callout callout-tip"><div class="callout-header">&#128161; Wof&uuml;r die Ordner?</div><p><span class="inline-code">images/</span> = Festplatten-Kopien, <span class="inline-code">mounts/</span> = Eingeh&auml;ngte Images, <span class="inline-code">hashes/</span> = Pr&uuml;fsummen, <span class="inline-code">notes/</span> = Notizen &amp; Protokolle, <span class="inline-code">reports/</span> = Berichte, <span class="inline-code">tools/</span> = Hilfsprogramme.</p></div>

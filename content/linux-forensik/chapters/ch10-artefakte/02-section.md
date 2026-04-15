@@ -1,0 +1,6 @@
+<h2 class="section-title"><span class="number">10.2</span> &Uuml;bung: Alle Dateien auflisten (inkl. gel&ouml;scht)</h2><p>Mit <span class="inline-code">fls</span> listest du alle Dateien auf &ndash; auch gel&ouml;schte. Gel&ouml;schte Dateien sind mit * markiert:</p><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code>fls -r -p /cases/case-001/images/usb-stick.img</code></pre></div><p><strong>Erwartete Ausgabe im Terminal:</strong></p><div class="code-block output-block"><div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div><pre><code>/documents
+/documents/report.pdf
+/notes.txt
+/deleted_secrets.xlsx (deleted)
+/pictures
+/pictures/photo.jpg</code></pre></div><div class="table-container"><table><thead><tr><th>Bestandteil</th><th>Bedeutung</th></tr></thead><tbody><tr><td><span class="inline-code">fls</span></td><td>File list &ndash; listet Dateien aus dem Dateisystem</td></tr><tr><td><span class="inline-code">-r</span></td><td>Recursive &ndash; alle Unterverzeichnisse</td></tr><tr><td><span class="inline-code">-p</span></td><td>Full path &ndash; zeigt komplette Pfade an</td></tr><tr><td><span class="inline-code">(deleted)</span></td><td>Datei wurde gel&ouml;scht, Datenbl&ouml;cke evtl. noch vorhanden</td></tr></tbody></table></div>

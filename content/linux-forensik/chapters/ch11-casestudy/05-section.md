@@ -1,0 +1,3 @@
+<h2 class="section-title"><span class="number">11.5</span> &Uuml;bung: Forensisches Imaging</h2><p>Erstelle das bit-genaue Abbild:</p><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code>dd if=/dev/sdb of=case-001/images/usb-stick.img bs=16M conv=noerror,sync status=progress</code></pre></div><p><strong>Erwartete Ausgabe im Terminal:</strong></p><div class="code-block output-block"><div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div><pre><code>1024+0 Datens&#228;tze ein
+1024+0 Datens&#228;tze aus
+17179869184 bytes (16.0 GB) kopiert, 1024 s, 16.0 MB/s</code></pre></div>

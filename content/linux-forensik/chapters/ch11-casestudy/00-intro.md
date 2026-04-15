@@ -1,0 +1,10 @@
+---
+id: "ch11-casestudy"
+title: "Case Study"
+icon: "&#9888;"
+section: "Trainingsmodul 5"
+prev: "ch10-artefakte"
+next: "ch10-labs"
+---
+
+<h1 class="chapter-title">Case Study: Kompletter forensischer Workflow</h1><div class="chapter-subtitle">12 Schritte &ndash; von der Vorbereitung bis zum Abschluss</div><p class="chapter-intro">Jetzt setzt du alles zusammen was du gelernt hast. Du durchl&auml;ufst den kompletten forensischen Workflow an einem Fallbeispiel &ndash; Schritt f&uuml;r Schritt, mit Erkl&auml;rungen und Entscheidungsfragen.</p><div class="scenario-box"><div class="scenario-icon">&#127919;</div><div class="scenario-label">EINSATZ-SZENARIO</div><div class="scenario-text">Ein USB-Stick wurde bei einer Durchsuchung sichergestellt. Dein Auftrag: Erstelle ein forensisches Image, verifiziere es, mounte es zur Analyse und dokumentiere jeden Schritt.</div></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#9881;</div><div class="feature-text"><h3>Schritt 1-3</h3><p>Vorbereitung, Identifikation, Unmount</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128272;</div><div class="feature-text"><h3>Schritt 4-7</h3><p>Hashing, Imaging, Verifikation</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128269;</div><div class="feature-text"><h3>Schritt 8-10</h3><p>Mounten, Analyse, Hex-Analyse</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#9989;</div><div class="feature-text"><h3>Schritt 11-12</h3><p>Cleanup und Abschluss</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div><div class="exercise-start-banner"><div class="exercise-start-icon">&#128187;</div><div class="exercise-start-text"><strong>Die komplette Case Study beginnt jetzt!</strong><br>F&uuml;hre jeden Schritt im Terminal aus und beantworte die Entscheidungsfragen.</div></div>

@@ -1,0 +1,11 @@
+Mar 14 08:00:01 server rsyslogd: [origin software="rsyslogd" swVersion="8.2102"] start
+Mar 14 08:00:02 server kernel: [    0.000000] Linux version 5.15.0-generic
+Mar 14 08:01:15 server systemd[1]: Started OpenSSH Server
+Mar 14 09:30:00 server kernel: [  123.456] usb 1-1: new high-speed USB device number 3 using xhci_hcd
+Mar 14 09:30:01 server kernel: [  123.789] usb-storage 1-1:1.0: USB Mass Storage device detected
+Mar 14 09:30:02 server kernel: [  124.012] sd 2:0:0:0: [sdb] 62500000 512-byte logical blocks: (32.0 GB/29.8 GiB)
+Mar 14 09:30:03 server kernel: [  124.234] sd 2:0:0:0: [sdb] Write Protect is off
+Mar 15 03:47:22 server sshd[5678]: Accepted password for admin from 192.168.100.42
+Mar 15 03:50:15 server kernel: [88888.123] possible SYN flooding on port 80. Dropping request.
+Mar 15 03:51:00 server apache2[9999]: Server started
+Mar 15 04:00:00 server systemd[1]: Started Session 42 of user admin.
