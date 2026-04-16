@@ -115,7 +115,8 @@ docs/                             # Dokumentation
 ```bash
 # 1. Repository klonen
 git clone https://github.com/hnslng/forensik-trainingsplattform.git
-cd linux-forensik-lab
+cd forensik-trainingsplattform
+
 
 # 2. Content bauen
 python3 build_content.py
