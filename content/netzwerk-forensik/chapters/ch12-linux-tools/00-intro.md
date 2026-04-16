@@ -1,0 +1,9 @@
+---
+id: "ch12-linux-tools"
+title: "Linux-Netzwerktools"
+icon: "&#128187;"
+section: "Werkzeuge"
+prev: "ch11-icmp"
+next: "ch13-routing"
+---
+<h1 class="chapter-title">Linux-Netzwerk-Tools</h1><div class="chapter-subtitle">ip, ss, nmap, curl und mehr</div><p class="chapter-intro">Die wichtigsten Linux-Befehle f&uuml;r die Netzwerk-Praxis. Du lernst <span class="inline-code">ip</span>, <span class="inline-code">ss</span>, <span class="inline-code">nmap</span>, <span class="inline-code">curl</span> und <span class="inline-code">wget</span> kennen &ndash; und wann du welchen Befehl brauchst.</p><div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du kennst die wichtigsten Netzwerk-Befehle und kannst sie selbstst&auml;ndig in der Praxis einsetzen.</p></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>ip</h3><p>Interfaces &amp; Adressen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128270;</div><div class="feature-text"><h3>ss</h3><p>Verbindungen anzeigen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128269;</div><div class="feature-text"><h3>nmap</h3><p>Port-Scans</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#127760;</div><div class="feature-text"><h3>curl/wget</h3><p>HTTP &amp; Downloads</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div>

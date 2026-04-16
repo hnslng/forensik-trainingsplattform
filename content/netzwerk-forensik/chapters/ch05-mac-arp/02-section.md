@@ -1,0 +1,8 @@
+<h2 class="section-title"><span class="number">5.2</span> ARP &ndash; Wie Ger&auml;te sich im lokalen Netz finden</h2><p><strong>ARP</strong> (Address Resolution Protocol) &uuml;bersetzt IP-Adressen in MAC-Adressen. Warum n&ouml;tig? Weil Daten im lokalen Netz (Layer 2) <strong>&uuml;ber MAC-Adressen</strong> zugestellt werden, nicht &uuml;ber IP-Adressen.</p><p><strong>Der ARP-Ablauf Schritt f&uuml;r Schritt:</strong></p><ol><li>Ger&auml;t A will Daten an IP <span class="inline-code">192.168.1.50</span> senden</li><li>A schaut in seiner <strong>ARP-Tabelle</strong> (Cache) nach &ndash; ist die MAC schon bekannt?</li><li>Kein Eintrag? &rarr; <strong>ARP-Request</strong> an alle Ger&auml;te im Netz: <em>"Wer hat 192.168.1.50?"</em></li><li>Das Ger&auml;t mit dieser IP antwortet: <em>"Ich! Meine MAC ist AA:BB:CC:DD:EE:FF"</em> (<strong>ARP-Reply</strong>)</li><li>Ger&auml;t A speichert den Eintrag und sendet die Daten</li></ol><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code># ARP-Tabelle anzeigen
+ip neigh show
+
+# Klassisch (&auml;lterer Befehl)
+arp -a
+
+# ARP-Cache leeren
+sudo ip neigh flush all</code></pre></div><p><strong>Wichtig:</strong> ARP funktioniert nur <strong>im lokalen Netz</strong>. F&uuml;r Ger&auml;te au&szlig;erhalb des eigenen Netzes wird das <strong>Default-Gateway</strong> (Router) per ARP gesucht &ndash; der Router k&uuml;mmert sich um den Rest.</p>

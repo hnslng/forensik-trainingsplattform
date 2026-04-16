@@ -1,0 +1,9 @@
+---
+id: "ch03-ipv4"
+title: "IPv4 – Adressierung und Subnetting"
+icon: "&#128202;"
+section: "Adressierung"
+prev: "ch02-geraete"
+next: "ch04-ipv6"
+---
+<h1 class="chapter-title">IPv4 &ndash; Adressierung und Subnetting</h1><div class="chapter-subtitle">Die Hausnummern des Internets</div><p class="chapter-intro">IPv4-Adressen sind die Hausnummern des Internets. Jedes Ger&auml;t im Netz braucht eine &ndash; egal ob PC, Smartphone oder Drucker. Lerne wie sie aufgebaut sind, was Subnetzmasken bewirken und wie du Netze selbst aufteilst.</p><div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du verstehst den Aufbau von IPv4-Adressen, kennst CIDR-Notation und kannst einfache Subnetting-Aufgaben l&ouml;sen.</p></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128203;</div><div class="feature-text"><h3>IPv4-Aufbau</h3><p>4 Oktetts verstehen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128200;</div><div class="feature-text"><h3>Subnetting</h3><p>Netze aufteilen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#127760;</div><div class="feature-text"><h3>CIDR</h3><p>/24, /26, /30</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>Terminal-&Uuml;bung</h3><p>ip addr, ip route</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div>

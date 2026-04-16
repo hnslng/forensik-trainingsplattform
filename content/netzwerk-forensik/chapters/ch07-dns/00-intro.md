@@ -1,0 +1,9 @@
+---
+id: "ch07-dns"
+title: "DNS – Namensauflösung"
+icon: "&#128225;"
+section: "Protokolle"
+prev: "ch06-tcp-udp"
+next: "ch08-dhcp"
+---
+<h1 class="chapter-title">DNS &ndash; Namensaufl&ouml;sung</h1><div class="chapter-subtitle">Das Telefonbuch des Internets</div><p class="chapter-intro">Du tippst <span class="inline-code">google.com</span> in den Browser &ndash; und landest bei <span class="inline-code">142.250.185.206</span>. DNS macht diese &Uuml;bersetzung. Ohne DNS g&auml;be es kein Internet wie wir es kennen.</p><div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du verstehst wie DNS funktioniert, kennst die wichtigsten Record-Typen und kannst DNS-Abfragen mit <span class="inline-code">dig</span> und <span class="inline-code">nslookup</span> selbst durchf&uuml;hren.</p></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128269;</div><div class="feature-text"><h3>DNS-Records</h3><p>A, MX, NS, AAAA</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128260;</div><div class="feature-text"><h3>DNS-Aufl&ouml;sung</h3><p>Domain &rarr; IP</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128196;</div><div class="feature-text"><h3>Reverse DNS</h3><p>IP &rarr; Domain</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>Terminal-&Uuml;bung</h3><p>dig, nslookup</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div>

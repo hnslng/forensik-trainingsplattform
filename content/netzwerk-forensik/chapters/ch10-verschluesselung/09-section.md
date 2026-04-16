@@ -1,0 +1,6 @@
+<h2 class="section-title"><span class="number">10.9</span> &Uuml;bung: Nur das Ablaufdatum pr&uuml;fen</h2><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code># Nur Ablaufdatum anzeigen
+echo | openssl s_client -connect google.com:443 2>/dev/null | openssl x509 -noout -dates
+
+# Nur das "Not After" Datum
+echo | openssl s_client -connect google.com:443 2>/dev/null | openssl x509 -noout -enddate</code></pre></div><p><strong>Erwartete Ausgabe im Terminal:</strong></p><div class="code-block output-block"><div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div><pre><code>notBefore=Mar 18 08:29:15 2024 GMT
+notAfter=Jun 10 08:29:14 2024 GMT</code></pre></div><div class="callout callout-tip"><div class="callout-header">&#128161; Wichtig</div><p>Zertifikate sind nur begrenzt g&uuml;ltig (meist 90 Tage bei Let's Encrypt, 1 Jahr bei kommerziellen CAs). Ein abgelaufenes Zertifikat f&uuml;hrt zu Browser-Warnungen.</p></div>

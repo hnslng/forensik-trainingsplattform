@@ -1,0 +1,9 @@
+---
+id: "ch08-dhcp"
+title: "DHCP – Automatische IP-Vergabe"
+icon: "&#128274;"
+section: "Protokolle"
+prev: "ch07-dns"
+next: "ch09-http"
+---
+<h1 class="chapter-title">DHCP &ndash; Automatische Adressvergabe</h1><div class="chapter-subtitle">Wie jedes Ger&auml;t automatisch eine IP-Adresse bekommt</div><p class="chapter-intro">Wenn du deinen Laptop ins WLAN einloggst, bekommt er sofort eine IP-Adresse. Das macht DHCP automatisch &ndash; du musst nichts konfigurieren. Lerne wie der DORA-Prozess funktioniert und wie du IPs manuell setzt.</p><div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du verstehst wie DHCP funktioniert (DORA-Prozess), wei&szlig;t was eine Lease-Time ist und kannst IP-Adressen manuell konfigurieren.</p></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128230;</div><div class="feature-text"><h3>DORA-Prozess</h3><p>Discover bis Acknowledge</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128197;</div><div class="feature-text"><h3>Lease-Time</h3><p>Der IP-Mietvertrag</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128736;</div><div class="feature-text"><h3>Statische IP</h3><p>Manuell konfigurieren</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>Terminal-&Uuml;bung</h3><p>ip addr, resolv.conf</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div>

@@ -1,0 +1,9 @@
+---
+id: "ch13-routing"
+title: "Routing"
+icon: "&#128260;"
+section: "Infrastruktur"
+prev: "ch12-linux-tools"
+next: "ch14-firewall"
+---
+<h1 class="chapter-title">Routing &amp; Gateway</h1><div class="chapter-subtitle">Wege durchs Netz</div><p class="chapter-intro">Wenn du eine Webseite aufrufst, muss dein Computer wissen: Wohin mit den Daten? Routing bestimmt den Weg der Pakete durchs Netz &ndash; von deinem Rechner bis zum Ziel und zur&uuml;ck.</p><div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du verstehst die Routing-Tabelle, wei&szlig;t was ein Default-Gateway macht und kannst statische Routen setzen.</p></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128736;</div><div class="feature-text"><h3>Routing-Tabelle</h3><p>Wegbestimmung verstehen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128674;</div><div class="feature-text"><h3>Default-Gateway</h3><p>Der Ausgang ins Internet</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128260;</div><div class="feature-text"><h3>Statische Routen</h3><p>Manuell Wege setzen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>Terminal-&Uuml;bung</h3><p>ip route, traceroute</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div>

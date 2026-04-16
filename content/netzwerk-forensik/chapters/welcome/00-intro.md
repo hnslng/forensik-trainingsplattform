@@ -1,0 +1,9 @@
+---
+id: "welcome"
+title: "Willkommen"
+icon: "&#127760;"
+section: "Start"
+prev: null
+next: "ch01-osi"
+---
+<div class="welcome-hero"><p class="welcome-hero-eyebrow">ABB IT-FAHNDUNG</p><h1>Netzwerk Forensik</h1><p class="welcome-hero-desc">Grundlagen der Netzwerkanalyse f&uuml;r IT-Fahnder &mdash; von OSI bis Wireshark.</p><button class="welcome-cta" onclick="App.navigateTo('ch01-osi')">Training starten &rarr;</button></div><div class="welcome-note"><span>&#128161; Jeder Fachbegriff wird beim ersten Auftreten erkl&auml;rt. Keine Vorkenntnisse n&ouml;tig.</span></div><div class="welcome-modules"><div class="welcome-module" onclick="App.navigateTo('ch01-osi')"><div class="welcome-module-left"><span class="welcome-module-num">01</span></div><div class="welcome-module-body"><h2>Grundlagen</h2><p>OSI-Modell, TCP/IP, Netzwerkger&auml;te, IPv4, Subnetting, IPv6, MAC-Adressen, ARP</p></div><span class="welcome-module-arrow">&rarr;</span></div><div class="welcome-module" onclick="App.navigateTo('ch06-tcp-udp')"><div class="welcome-module-left"><span class="welcome-module-num">02</span></div><div class="welcome-module-body"><h2>Protokolle</h2><p>TCP, UDP, DNS, DHCP, HTTP, HTTPS, Verschl&uuml;sselung, ICMP</p></div><span class="welcome-module-arrow">&rarr;</span></div><div class="welcome-module" onclick="App.navigateTo('ch12-linux-tools')"><div class="welcome-module-left"><span class="welcome-module-num">03</span></div><div class="welcome-module-body"><h2>Praxis</h2><p>Linux-Netzwerktools, Routing, Firewall, Wireshark, Paketanalyse, Troubleshooting</p></div><span class="welcome-module-arrow">&rarr;</span></div></div>

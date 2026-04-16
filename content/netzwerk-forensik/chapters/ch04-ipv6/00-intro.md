@@ -1,0 +1,9 @@
+---
+id: "ch04-ipv6"
+title: "IPv6 – Die Zukunft"
+icon: "&#128202;"
+section: "Adressierung"
+prev: "ch03-ipv4"
+next: "ch05-mac-arp"
+---
+<h1 class="chapter-title">IPv6 &ndash; Die n&auml;chste Generation</h1><div class="chapter-subtitle">Die Zukunft der Adressierung</div><p class="chapter-intro">IPv4 hat ca. 4,3 Milliarden Adressen &ndash; die sind l&auml;ngst aufgebraucht. IPv6 mit 128 Bit l&ouml;st dieses Problem f&uuml;r immer. Lerne den Aufbau, Adresstypen und die automatische Konfiguration kennen.</p><div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du kennst den Aufbau von IPv6-Adressen, unterscheidest die Adresstypen und wei&szlig;t wie Ger&auml;te sich per SLAAC selbst konfigurieren.</p></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#127760;</div><div class="feature-text"><h3>IPv6-Aufbau</h3><p>128 Bit, Hex-Notation</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128269;</div><div class="feature-text"><h3>Adresstypen</h3><p>Global, Link-Local, ULA</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#9881;</div><div class="feature-text"><h3>SLAAC</h3><p>Auto-Konfiguration</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>Terminal-&Uuml;bung</h3><p>ip -6 addr, ping6</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div>

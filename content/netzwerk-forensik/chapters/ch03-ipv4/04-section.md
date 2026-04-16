@@ -1,0 +1,5 @@
+<h2 class="section-title"><span class="number">3.4</span> CIDR &ndash; Kompakte Schreibweise</h2><p><strong>CIDR</strong> (Classless Inter-Domain Routing, sprich: "saider") = Die kompakte Schreibweise f&uuml;r Subnetzmasken. <span class="inline-code">/24</span> bedeutet: 24 von 32 Bits sind Netzanteil.</p><div class="code-block"><div class="code-header"><span class="lang">PRINZIP</span></div><pre><code>/24  &rarr;  255.255.255.0    &rarr;  254 Hosts  (Heimnetz)
+/25  &rarr;  255.255.255.128  &rarr;  126 Hosts  (2 Subnetze)
+/26  &rarr;  255.255.255.192  &rarr;   62 Hosts  (4 Subnetze)
+/28  &rarr;  255.255.255.240  &rarr;   14 Hosts  (Management)
+/30  &rarr;  255.255.255.252  &rarr;    2 Hosts  (Punkt-zu-Punkt)</code></pre></div><p><strong>Die Formel:</strong> <span class="inline-code">Hosts = 2^H &minus; 2</span> (H = Anzahl Host-Bits, &minus;2 f&uuml;r Netz- und Broadcast-Adresse)</p>

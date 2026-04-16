@@ -1,0 +1,9 @@
+---
+id: "ch15-wireshark"
+title: "Wireshark & Paketanalyse"
+icon: "&#128202;"
+section: "Analyse"
+prev: "ch14-firewall"
+next: "ch16-casestudy"
+---
+<h1 class="chapter-title">Wireshark &amp; tshark &ndash; Netzwerkverkehr sichtbar machen</h1><div class="chapter-subtitle">Jedes Paket unter die Lupe nehmen</div><p class="chapter-intro">Wireshark ist wie ein R&ouml;ntgenger&auml;t f&uuml;rs Netzwerk: Es zeigt jeden Datenverkehr in Echtzeit. Lerne Capture-Filter, Display-Filter und wie du DNS- und HTTP-Traffic analysierst.</p><div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du kannst tshark starten, gezielt filtern und mitgeschnittenen Traffic analysieren.</p></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128065;</div><div class="feature-text"><h3>Wireshark</h3><p>Grafische Analyse</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128270;</div><div class="feature-text"><h3>tshark</h3><p>CLI-Variante</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128269;</div><div class="feature-text"><h3>Filter</h3><p>Capture &amp; Display</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>Terminal-&Uuml;bung</h3><p>tshark capture</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div>

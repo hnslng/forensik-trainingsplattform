@@ -1,0 +1,9 @@
+---
+id: "ch11-icmp"
+title: "ICMP & Diagnose"
+icon: "&#128172;"
+section: "Werkzeuge"
+prev: "ch10-verschluesselung"
+next: "ch12-linux-tools"
+---
+<h1 class="chapter-title">ICMP &amp; Troubleshooting &ndash; Probleme finden</h1><div class="chapter-subtitle">Wenn das Internet nicht geht &ndash; systematisch finden</div><p class="chapter-intro">"Internet geht nicht" &ndash; der Klassiker. ICMP-Tools wie <span class="inline-code">ping</span> und <span class="inline-code">traceroute</span> helfen dir, das Problem systematisch einzugrenzen. Von innen nach au&szlig;en, Schritt f&uuml;r Schritt.</p><div class="callout callout-info"><div class="callout-header">&#9432; Was du nach diesem Kapitel kannst</div><p>Du kannst Netzwerkprobleme systematisch eingrenzen &ndash; vom eigenen Rechner bis zum Internet. Du kennst ping, traceroute und mtr.</p></div><div class="feature-grid chapter-preview-grid"><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128172;</div><div class="feature-text"><h3>ICMP</h3><p>Ping &amp; Fehlermeldungen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128674;</div><div class="feature-text"><h3>ping</h3><p>Erreichbarkeit testen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128506;</div><div class="feature-text"><h3>traceroute</h3><p>Den Weg zeigen</p></div></div><div class="feature-card chapter-preview-card"><div class="feature-icon">&#128187;</div><div class="feature-text"><h3>Terminal-&Uuml;bung</h3><p>Troubleshooting-Pfad</p></div></div></div><div class="slide-nav-hint">&#9654; Nutze die Buttons oben in der Topbar zur Navigation &ndash; <span class="inline-code">&lsaquo; Zur&uuml;ck</span> und <span class="inline-code">Weiter &rsaquo;</span></div>
