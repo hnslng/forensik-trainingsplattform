@@ -114,7 +114,7 @@ docs/                             # Dokumentation
 
 ```bash
 # 1. Repository klonen
-git clone https://github.com/hnslng/forensik-trainingsplattform.git
+git clone https://192.168.113.184/lah/forensik-trainingsplattform.git
 cd forensik-trainingsplattform
 
 
