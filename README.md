@@ -134,6 +134,9 @@ python3 build_content.py
 ### Slide-Authoring
 
 - Anleitung fur neue Slides im bestehenden Design: `docs/slide-authoring-guide.md`
+- Didaktik-Konzept fuer Einsteiger-Slides: `docs/slide-didaktik-konzept.md`
+- Prompt-Vorlagen fuer KI-gestuetzte Slide-Erstellung: `docs/ki-prompt-slide-erstellung.md`
+- Cheatsheets (Linux/Windows) als Fachreferenz: `docs/cheatsheets/`
 
 ## Neues Lab hinzufugen
 

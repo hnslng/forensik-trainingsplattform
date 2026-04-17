@@ -3,9 +3,10 @@
 Dieser Leitfaden beschreibt das Zielbild fuer Slides in der Forensik-Trainingsplattform.
 Ergaenzend zu `docs/slide-authoring-guide.md` fokussiert er auf Didaktik, Sprache, Niveau und Lernfuehrung fuer Einsteiger.
 
-## Referenzdokument
+## Referenzdokumente
 
 Fuer Linux-Forensik dient `docs/cheatsheets/linux-forensik/linux_forensik_cheatsheet_v2.md` als inhaltlich-didaktische Basis.
+Fuer Windows-Forensik dient `docs/cheatsheets/windows-forensik/windows_forensik_cheatsheet_v1.md` als inhaltlich-didaktische Basis.
 Das Slide-Design muss nicht das gleiche Layout wie das Cheatsheet haben, aber soll dessen Logik uebernehmen:
 
 - klare Reihenfolge im Workflow

@@ -8,6 +8,7 @@ Er kann in Cursor, ChatGPT oder aehnlichen Tools verwendet werden.
 Nutze als fachlich-didaktische Primärreferenz:
 
 - `docs/cheatsheets/linux-forensik/linux_forensik_cheatsheet_v2.md`
+- `docs/cheatsheets/windows-forensik/windows_forensik_cheatsheet_v1.md` (bei Windows-Forensik-Slides)
 
 Daraus werden fuer neue Slides uebernommen:
 
@@ -38,6 +39,7 @@ Erstelle/ueberarbeite eine Slide so, dass ein absoluter Einsteiger sie ohne Vorw
 
 Referenz:
 - Nutze `docs/cheatsheets/linux-forensik/linux_forensik_cheatsheet_v2.md` als stilistische und didaktische Vorlage.
+- Nutze fuer Windows-Slides `docs/cheatsheets/windows-forensik/windows_forensik_cheatsheet_v1.md` als fachliche Vorlage.
 - Uebernimm den Erklaerstil (kurz, praezise, praxisnah, nachvollziehbar).
 - Uebernimm den Workflow-Stil (klarer Ablauf, Kontrollpunkte, typische Fehler vermeiden).
 
@@ -72,6 +74,7 @@ Simulatorregeln:
 
 Zusatzregel fuer Forensik-Inhalte:
 - Falls die Slide Linux-Forensik betrifft, sollen Begriffe, Reihenfolge und Schwerpunkt mit `docs/cheatsheets/linux-forensik/linux_forensik_cheatsheet_v2.md` konsistent sein (z. B. Integritaet, Hashvergleich, read-only, Dokumentation).
+- Falls die Slide Windows-Forensik betrifft, sollen Begriffe, Reihenfolge und Schwerpunkt mit `docs/cheatsheets/windows-forensik/windows_forensik_cheatsheet_v1.md` konsistent sein (z. B. Device-Pfade, Imaging/Verify, read-only, Chain of Custody).
 
 Outputregeln:
 - Gib nur den finalen HTML-in-MD-Inhalt zurueck.
@@ -113,6 +116,7 @@ Slides:
   - Lab-Typ (`linux-forensik` oder `netzwerk-forensik`)
   - Lernziel der Lektion
   - Referenzdatei: `docs/cheatsheets/linux-forensik/linux_forensik_cheatsheet_v2.md` (falls Linux-Stil uebernommen werden soll)
+  - Referenzdatei: `docs/cheatsheets/windows-forensik/windows_forensik_cheatsheet_v1.md` (falls Windows-Stil uebernommen werden soll)
   - erlaubte Kommandos (oder Verweis auf `terminal.js`)
 - Gewuenschte Komplexitaet:
   - "Einsteiger", "Fortgeschritten", "Pruefungsvorbereitung"
