@@ -1,0 +1,28 @@
+accent: '#2563eb'
+canonical_order:
+- welcome
+- ch01-ablauf
+- ch02-grundbegriffe
+- ch03-identifikation
+- ch04-partitionstabellen
+- ch05-imaging
+- ch06-image-formate
+- ch07-hashing
+- ch08-mounting
+- ch09-hex-binaer
+- ch10-vergleich
+- ch11-strings-filter
+- ch12-dateisysteme
+- ch13-sicher-loeschen
+- ch14-write-blocker
+- ch15-protokollierung
+- ch16-best-practices
+- ch17-casestudy
+- ch18-kompakt-cheatsheet
+- ch19-quellen-standards
+- ch20-tool-installation
+- ch21-uebungen
+description: Windows-basierte Datentraegerforensik von Imaging bis Chain of Custody
+icon: '&#128421;'
+id: windows-forensik
+title: Windows Forensik Lab

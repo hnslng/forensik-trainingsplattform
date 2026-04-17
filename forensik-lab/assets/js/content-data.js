@@ -4,6 +4,7 @@
 var LabRegistry = [
   { id: "linux-forensik", title: "Linux Forensik Lab", icon: "&#128270;", description: "Operative forensische Datensicherung — von der Sicherung bis zur gerichtsverwertbaren Beweisfuhrung", accent: "#00d4aa" },
   { id: "netzwerk-forensik", title: "Netzwerk Forensik Lab", icon: "&#127760;", description: "Netzwerkgrundlagen für IT-Fahnder — von OSI bis Wireshark", accent: "#3b82f6" },
+  { id: "windows-forensik", title: "Windows Forensik Lab", icon: "&#128421;", description: "Windows-basierte Datentraegerforensik von Imaging bis Chain of Custody", accent: "#2563eb" },
 ];
 
 var ContentData = {};
@@ -1053,6 +1054,7691 @@ ip neigh show
 
 # Offene Ports auf dem betroffenen Rechner
 ss -tlnp</code></pre></div><h2 class="section-title"><span class="number">16.4</span> Phase 4: Dokumentation und Quick Reference</h2><p>Jeder Befund wird dokumentiert &ndash; <strong>immer</strong>. Sp&auml;ter willst du wissen was du gemacht hast.</p><div class="table-container"><table><thead><tr><th>Feld</th><th>Beispiel</th></tr></thead><tbody><tr><td><strong>Uhrzeit</strong></td><td>10:35 CET</td></tr><tr><td><strong>Betroffenes System</strong></td><td>PC-Buchhaltung (192.168.1.45)</td></tr><tr><td><strong>Symptom</strong></td><td>Kein Internetzugang</td></tr><tr><td><strong>Test 1</strong></td><td>ping Gateway: OK</td></tr><tr><td><strong>Test 2</strong></td><td>ping 8.8.8.8: OK</td></tr><tr><td><strong>Test 3</strong></td><td>ping google.com: FAIL &rarr; DNS-Problem</td></tr><tr><td><strong>L&ouml;sung</strong></td><td>DNS-Server auf 8.8.8.8 ge&auml;ndert</td></tr><tr><td><strong>Ergebnis</strong></td><td>Behoben um 10:42</td></tr></tbody></table></div><h2 class="section-title">Quick Reference &ndash; Befehls-Cheatsheet</h2><div class="table-container"><table><thead><tr><th>Befehl</th><th>Funktion</th></tr></thead><tbody><tr><td><span class="inline-code">ip a</span></td><td>IP-Adressen</td></tr><tr><td><span class="inline-code">ip route</span></td><td>Routing</td></tr><tr><td><span class="inline-code">ip neigh</span></td><td>ARP-Tabelle</td></tr><tr><td><span class="inline-code">ping Ziel</span></td><td>Erreichbarkeit</td></tr><tr><td><span class="inline-code">traceroute Ziel</span></td><td>Weg zeigen</td></tr><tr><td><span class="inline-code">dig domain</span></td><td>DNS abfragen</td></tr><tr><td><span class="inline-code">ss -tunap</span></td><td>Verbindungen</td></tr><tr><td><span class="inline-code">nmap Ziel</span></td><td>Portscan</td></tr><tr><td><span class="inline-code">curl -I URL</span></td><td>HTTP-Header</td></tr><tr><td><span class="inline-code">tshark -i eth0</span></td><td>Traffic mitschneiden</td></tr></tbody></table></div><div class="exercise-box"><div class="exercise-header"><span class="exercise-badge">&Uuml;bung</span><span class="exercise-name">Komplettes Troubleshooting</span></div><div class="exercise-body"><div class="exercise-goal"><div class="goal-label">Ziel</div><p>Einen Netzwerk-Fall systematisch analysieren</p></div><div class="exercise-steps"><ol class="numbered-list"><li>IP pr&uuml;fen: <code>ip addr show</code></li><li>Gateway pr&uuml;fen: <code>ping -c 2 192.168.1.1</code></li><li>Internet pr&uuml;fen: <code>ping -c 2 8.8.8.8</code></li><li>DNS pr&uuml;fen: <code>dig google.com</code></li><li>HTTP testen: <code>curl -I https://google.com</code></li></ol></div><div class="toggle-container"><div class="toggle-header"><span class="toggle-label">L&ouml;sung anzeigen</span><span class="toggle-arrow">&#9654;</span></div><div class="toggle-content"><p>Loopback &rarr; IP &rarr; Gateway &rarr; Internet &rarr; DNS &rarr; HTTP. Problem liegt dort wo der erste Test fehlschl&auml;gt.</p></div></div></div></div><button class="complete-section-btn" data-chapter="ch16-casestudy">&#9744; Kapitel als abgeschlossen markieren</button><div class="nav-buttons"><button class="nav-btn" data-target="ch15-wireshark">&#8592; Zur&uuml;ck</button><button class="nav-btn" data-target="welcome">Willkommen &#8594;</button></div>`;
+ContentData["windows-forensik"] = {};
+
+ContentData["windows-forensik"]["welcome"] = `<div class="welcome-hero"><p class="welcome-hero-eyebrow">ABB IT-FAHNDUNG</p><h1>Windows Forensik</h1><p class="welcome-hero-desc">Praxisnahe Datentraegerforensik unter Windows &mdash; von Identifikation und Imaging bis zur dokumentierten Beweiskette.</p><button class="welcome-cta" onclick="App.navigateTo('ch01-ablauf')">Training starten &rarr;</button></div><div class="welcome-note"><span>&#128161; Das Lab nutzt einen simulierten Terminalmodus mit Windows-nahen Befehlen fuer sicheres Training.</span></div><div class="welcome-modules"><div class="welcome-module" onclick="App.navigateTo('ch01-ablauf')"><div class="welcome-module-left"><span class="welcome-module-num">01</span></div><div class="welcome-module-body"><h2>Grundablauf</h2><p>Forensischer Workflow, Identifikation, Partitionstabellen, Imaging und Hashvergleich.</p></div><span class="welcome-module-arrow">&rarr;</span></div><div class="welcome-module" onclick="App.navigateTo('ch08-mounting')"><div class="welcome-module-left"><span class="welcome-module-num">02</span></div><div class="welcome-module-body"><h2>Analysepraxis</h2><p>Read-only-Mounting, Hex-Analyse, Vergleich, Strings und Dateisystem-Artefakte.</p></div><span class="welcome-module-arrow">&rarr;</span></div><div class="welcome-module" onclick="App.navigateTo('ch17-casestudy')"><div class="welcome-module-left"><span class="welcome-module-num">03</span></div><div class="welcome-module-body"><h2>Praxisfall</h2><p>Case-Studie, Toolchain, Reporting und Uebungen fuer den Einsatzalltag.</p></div><span class="welcome-module-arrow">&rarr;</span></div></div>`;
+ContentData["windows-forensik"]["ch01-ablauf"] = `<h1 class="chapter-title">Forensischer Ablauf unter Windows</h1>
+<div class="chapter-subtitle">Von der Uebernahme bis zur ersten sauberen Datentraeger-Dokumentation</div>
+<p class="chapter-intro">Du startest wie in einem echten Einsatz: erst sichern, dann analysieren. In diesem Kapitel trainierst du die ersten Schritte so, dass ein anderer Analyst sie spaeter 1:1 nachvollziehen kann.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">
+    Vor dir liegt ein sichergestellter USB-Datentraeger. Deine Aufgabe ist nicht "schnell reinschauen", sondern den Start des Falls forensisch sauber aufsetzen.
+  </div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>die Session sofort nachvollziehbar protokollieren,</li>
+    <li>Datentraeger und Partitionen korrekt identifizieren,</li>
+    <li>den Startablauf in der richtigen Reihenfolge begruenden,</li>
+    <li>deinen eigenen Workflow mit einem kurzen Selbstcheck pruefen.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 1.1 bis 1.3: Ausfuehren</h3>
+      <p>Du trainierst Logging, Datentraeger-Identifikation und Partition-Doku jeweils auf eigener Slide.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 1.4: Verstehen</h3>
+      <p>Du verknuepfst alles mit Merksatz, Fehlercheck und Transfer-Uebung.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">1.1</span> Schritt 1: Session sauber starten</h2>
+<p>In dieser Slide geht es nur um den ersten Pflichtschritt: Protokollierung aktivieren. Das ist deine Basis fuer alles, was danach kommt.</p>
+
+<h3>Warum dieser Schritt zuerst kommt</h3>
+<p>Ohne laufendes Transcript ist spaeter nicht mehr sauber nachweisbar, welche Befehle du wann ausgefuehrt hast.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Start-Transcript -Path C:\\Cases\\case01\\notes\\session.log</code></pre>
+</div>
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Start-Transcript</span> / <span class="inline-code">start-transcript</span></td><td>Startet die Protokollierung der PowerShell-Session in eine Textdatei.</td></tr>
+      <tr><td><span class="inline-code">-Path</span></td><td>Pfad zur Logdatei. Alles, was du danach im Terminal tippst, landet dort (im Simulator vereinfacht dargestellt).</td></tr>
+      <tr><td><span class="inline-code">C:\\Cases\\case01\\notes\\session.log</span></td><td>Beispiel: Session-Log im Case-Ordner unter <span class="inline-code">notes</span>.</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Dieser Schritt muss immer als Erstes kommen, damit die Nachweiskette von Beginn an vollstaendig ist.</p>
+</div>
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Transcript started...
+Output file: C:\\Cases\\case01\\notes\\session.log</code></pre>
+</div>
+<h3>Ausgabe erklaert (wenn die Meldung kommt)</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Transcript started...</span></td><td>Die Protokollierung ist aktiv.</td></tr>
+      <tr><td><span class="inline-code">Output file:</span></td><td>Zeigt den Pfad zur Logdatei, die du in den Fallnotizen dokumentierst.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p><strong>Erfolgskriterium:</strong> Die Meldung <span class="inline-code">Transcript started</span> erscheint.</p>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Transcript korrekt starten</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Sicherstellen, dass deine Session von der ersten Sekunde an sauber protokolliert wird.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung (direkt hier nutzbar):</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -Path C:\\Cases\\case01\\notes\\session.log</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre <code>start-transcript</code> aus.</li>
+        <li>Pruefe, ob <span class="inline-code">Transcript started</span> erscheint.</li>
+        <li>Notiere den Pfad der Logdatei in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn das Transcript vor allen weiteren Befehlen aktiv ist und der Logpfad dokumentiert wurde.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">1.2</span> Schritt 2: Zielgeraet eindeutig identifizieren</h2>
+<p>Jetzt identifizierst du den Datentraeger, mit dem du arbeiten willst. Nur wenn das eindeutig ist, bleibt der Fall fachlich sauber.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk</code></pre>
+</div>
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-Disk</span> / <span class="inline-code">get-disk</span></td><td>Listet alle erkannten physischen Datentraeger auf.</td></tr>
+      <tr><td><span class="inline-code">(kein Zusatzparameter)</span></td><td>Du bekommst zuerst den Gesamtueberblick und waehlst danach das Zielgeraet.</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Erst wenn das Zielgeraet eindeutig ist, darfst du mit weiteren forensischen Schritten weitermachen.</p>
+</div>
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Number FriendlyName        Size
+0      Samsung SSD         512 GB
+1      SanDisk Cruzer       32 GB</code></pre>
+</div>
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Spalte / Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Number</span></td><td>Interne Disk-Nummer unter Windows (wird spaeter z. B. bei <span class="inline-code">PHYSICALDRIVE1</span> wichtig).</td></tr>
+      <tr><td><span class="inline-code">FriendlyName</span></td><td>Anzeigename des Herstellers/Modells &mdash; hilft, USB und interne Platte zu unterscheiden.</td></tr>
+      <tr><td><span class="inline-code">Size</span></td><td>Groesse des Datentraegers; zusaetzlicher Hinweis bei mehreren aehnlichen Geraeten.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p><strong>Erfolgskriterium:</strong> Du kannst das externe Geraet eindeutig benennen (hier: <span class="inline-code">Disk 1</span>).</p>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Richtiges Zielgeraet festlegen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Das richtige Device fuer die weitere Bearbeitung sicher bestimmen.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung (ohne Zurueckspringen):</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre <code>get-disk</code> aus.</li>
+        <li>Waehle das externe Zielgeraet anhand Name und Groesse aus.</li>
+        <li>Notiere die Disk-Nummer in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn das externe Device klar als Zielgeraet notiert ist und nicht mit dem Host-System verwechselt werden kann.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">1.3</span> Schritt 3: Partitionen fuer die Doku erfassen</h2>
+<p>Jetzt dokumentierst du die Partitionen des Zielgeraets. Diese Werte brauchst du spaeter fuer Nachweis, Bericht und Plausibilitaetscheck.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Partition -DiskNumber 1</code></pre>
+</div>
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-Partition</span> / <span class="inline-code">get-partition</span></td><td>Listet Partitionen eines physischen Datentraegers auf.</td></tr>
+      <tr><td><span class="inline-code">-DiskNumber 1</span></td><td>Bezieht sich auf die Disk mit Nummer 1 aus <span class="inline-code">Get-Disk</span> &mdash; muss zum gewaehlten Beweismittel passen.</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Die gewaehlte <span class="inline-code">DiskNumber</span> muss immer zur vorher identifizierten Ziel-Disk passen.</p>
+</div>
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>DiskNumber PartitionNumber Offset     Size
+1          1               1048576    31.9 GB</code></pre>
+</div>
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">PartitionNumber</span></td><td>Laufende Nummer der Partition auf dieser Disk.</td></tr>
+      <tr><td><span class="inline-code">Offset</span></td><td>Startposition der Partition in Bytes; wichtig fuer Imaging, Mounting und spaetere Analyse.</td></tr>
+      <tr><td><span class="inline-code">Size</span></td><td>Groesse der Partition.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p><strong>Erfolgskriterium:</strong> Du hast <span class="inline-code">DiskNumber</span>, <span class="inline-code">PartitionNumber</span> und <span class="inline-code">Offset</span> in deinen Notizen.</p>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Partitionsdaten sauber sichern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle relevanten Partitionswerte so erfassen, dass sie spaeter eindeutig pruefbar sind.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-partition -DiskNumber 1</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre <code>get-partition -DiskNumber 1</code> aus.</li>
+        <li>Notiere Disk-Nummer, Partitionsnummer und Offset.</li>
+        <li>Schreibe einen Satz, warum diese Werte fuer den Fall wichtig sind.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Bestanden ist die Uebung, wenn alle drei Werte dokumentiert sind und ein Dritter die Partition eindeutig wiederfinden kann.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">1.4</span> Alles verbinden: Reihenfolge verstehen</h2>
+<p>Jetzt setzt du die drei Einzelschritte zusammen und pruefst, ob dein Ablauf fachlich belastbar ist.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merksatz fuer jeden Fallstart</div>
+  <p>Immer erst <em>dokumentieren</em>, dann <em>identifizieren</em>, dann <em>partitionieren/dokumentieren</em>, danach erst sichern.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Start-Transcript</span></td><td>Befehls- und Zeitspur sichern</td></tr>
+      <tr><td><span class="inline-code">Get-Disk</span></td><td>Zielgeraet eindeutig bestimmen</td></tr>
+      <tr><td><span class="inline-code">Get-Partition -DiskNumber 1</span></td><td>Partitionswerte fuer die Fallakte erfassen</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Kein Transcript:</strong> Nachweiskette startet zu spaet.</li>
+    <li><strong>Falsches Device:</strong> Host-System und Beweismittel werden verwechselt.</li>
+    <li><strong>Lueckenhafte Notizen:</strong> Partition kann spaeter nicht eindeutig zugeordnet werden.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Mini-Workflow ohne Zurueckspringen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den kompletten Startablauf auf einer Slide ausfuehren und fachlich begruenden.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -Path C:\\Cases\\case01\\notes\\session.log
+get-disk
+get-partition -DiskNumber 1</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre <code>start-transcript</code>, dann <code>get-disk</code>, dann <code>get-partition -DiskNumber 1</code> aus.</li>
+        <li>Notiere Zielgeraet und Partitionsdaten in der Fallakte.</li>
+        <li>Schreibe zwei Saetze: Warum ist diese Reihenfolge Pflicht?</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Ablauf ist sauber, wenn erst die Nachweiskette aktiv ist, dann das Ziel eindeutig bestimmt wird und erst danach die Partitionsdaten dokumentiert werden.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch01-ablauf">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch02-grundbegriffe"] = `<h1 class="chapter-title">Device, Partition, Dateisystem</h1>
+<div class="chapter-subtitle">Device, Partition und Dateisystem sauber trennen</div>
+<p class="chapter-intro">Du hast mehrere Datentraeger in der Umgebung und musst die Ebenen fachlich korrekt unterscheiden.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du hast mehrere Datentraeger in der Umgebung und musst die Ebenen fachlich korrekt unterscheiden.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 2.1 bis 2.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 2.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">2.1</span> Device-Ebene lesen</h2>
+<p><strong>Was und warum:</strong> Start mit der physischen Sicht.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Disk</span></td></tr>
+      <tr><td>Nutzen</td><td>Start mit der physischen Sicht.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-disk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Start mit der physischen Sicht. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Number FriendlyName Size
+1 USB Evidence 32 GB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Number FriendlyName Size</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Device-Ebene lesen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">2.2</span> Partitionen zuordnen</h2>
+<p><strong>Was und warum:</strong> Eine Disk wird ueber ihre Partitionen beschrieben.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Partition -DiskNumber 1</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Partition -DiskNumber 1</span></td></tr>
+      <tr><td>Nutzen</td><td>Eine Disk wird ueber ihre Partitionen beschrieben.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-partition</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Eine Disk wird ueber ihre Partitionen beschrieben. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>DiskNumber PartitionNumber Offset Size
+1 1 1048576 31.9 GB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">DiskNumber PartitionNumber Offset Size</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Partitionen zuordnen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-partition -disknumber 1</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">2.3</span> Dateisystem erfassen</h2>
+<p><strong>Was und warum:</strong> Fuer Analyse und Bericht brauchst du den Dateisystemtyp.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Volume</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Volume</span></td></tr>
+      <tr><td>Nutzen</td><td>Fuer Analyse und Bericht brauchst du den Dateisystemtyp.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-volume</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Fuer Analyse und Bericht brauchst du den Dateisystemtyp. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>DriveLetter FileSystem Label
+E NTFS EVIDENCE</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">DriveLetter FileSystem Label</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Dateisystem erfassen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-volume</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">2.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Device, Partition und Dateisystem sauber trennen. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-Disk</span></td><td>Start mit der physischen Sicht.</td></tr>
+      <tr><td><span class="inline-code">Get-Partition -DiskNumber 1</span></td><td>Eine Disk wird ueber ihre Partitionen beschrieben.</td></tr>
+      <tr><td><span class="inline-code">Get-Volume</span></td><td>Fuer Analyse und Bericht brauchst du den Dateisystemtyp.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk
+get-partition -disknumber 1
+get-volume</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch02-grundbegriffe">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch03-identifikation"] = `<h1 class="chapter-title">Datentraeger identifizieren</h1>
+<div class="chapter-subtitle">Datentraeger eindeutig identifizieren und sichern</div>
+<p class="chapter-intro">Mehrere aehnliche Geraete sind angeschlossen. Du musst das richtige Beweisgeraet eindeutig dokumentieren.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Mehrere aehnliche Geraete sind angeschlossen. Du musst das richtige Beweisgeraet eindeutig dokumentieren.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 3.1 bis 3.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 3.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">3.1</span> Hardwaremerkmale anzeigen</h2>
+<p><strong>Was und warum:</strong> Stabile Merkmale senken Verwechslungsrisiko.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-PhysicalDisk</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-PhysicalDisk</span></td></tr>
+      <tr><td>Nutzen</td><td>Stabile Merkmale senken Verwechslungsrisiko.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-physicaldisk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Stabile Merkmale senken Verwechslungsrisiko. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>FriendlyName SerialNumber Size
+USB Evidence SN-AX31-7781 32 GB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">FriendlyName SerialNumber Size</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Hardwaremerkmale anzeigen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-physicaldisk</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">3.2</span> Kernfelder filtern</h2>
+<p><strong>Was und warum:</strong> Nur relevante Felder erleichtern den Bericht.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size</span></td></tr>
+      <tr><td>Nutzen</td><td>Nur relevante Felder erleichtern den Bericht.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-disk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Nur relevante Felder erleichtern den Bericht. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Number FriendlyName SerialNumber Size
+1 USB Evidence SN-AX31-7781 32 GB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Number FriendlyName SerialNumber Size</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kernfelder filtern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk | select-object number, friendlyname, serialnumber, size</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">3.3</span> Identifikation speichern</h2>
+<p><strong>Was und warum:</strong> Die Zuordnung muss dauerhaft in der Fallakte stehen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size | Out-File C:\\Cases\\case01\\notes\\device-id.txt</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size | Out-File C:\\Cases\\case01\\notes\\device-id.txt</span></td></tr>
+      <tr><td>Nutzen</td><td>Die Zuordnung muss dauerhaft in der Fallakte stehen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-disk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Die Zuordnung muss dauerhaft in der Fallakte stehen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Output written to C:\\Cases\\case01\\notes\\device-id.txt</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Output written to C:\\Cases\\case01\\notes\\device-id.txt</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Identifikation speichern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk | select-object number, friendlyname, serialnumber, size | out-file c:\\cases\\case01\\notes\\device-id.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">3.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Datentraeger eindeutig identifizieren und sichern. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-PhysicalDisk</span></td><td>Stabile Merkmale senken Verwechslungsrisiko.</td></tr>
+      <tr><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size</span></td><td>Nur relevante Felder erleichtern den Bericht.</td></tr>
+      <tr><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size | Out-File C:\\Cases\\case01\\notes\\device-id.txt</span></td><td>Die Zuordnung muss dauerhaft in der Fallakte stehen.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-physicaldisk
+get-disk | select-object number, friendlyname, serialnumber, size
+get-disk | select-object number, friendlyname, serialnumber, size | out-file c:\\cases\\case01\\notes\\device-id.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch03-identifikation">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch04-partitionstabellen"] = `<h1 class="chapter-title">Partitionstabellen verstehen</h1>
+<div class="chapter-subtitle">Partitionstabellen strukturiert auswerten</div>
+<p class="chapter-intro">Vor dem Imaging musst du die Partitionsstruktur sauber aufnehmen.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Vor dem Imaging musst du die Partitionsstruktur sauber aufnehmen.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 4.1 bis 4.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 4.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">4.1</span> Partitionstabelle anzeigen</h2>
+<p><strong>Was und warum:</strong> Rohueberblick fuer die Ziel-Disk schaffen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Partition -DiskNumber 1</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Partition -DiskNumber 1</span></td></tr>
+      <tr><td>Nutzen</td><td>Rohueberblick fuer die Ziel-Disk schaffen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-partition</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Rohueberblick fuer die Ziel-Disk schaffen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>DiskNumber PartitionNumber Type Offset Size
+1 1 Basic 1048576 31.9 GB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">DiskNumber PartitionNumber Type Offset Size</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Partitionstabelle anzeigen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-partition -disknumber 1</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">4.2</span> Kernspalten filtern</h2>
+<p><strong>Was und warum:</strong> Berichtsdaten kompakt halten.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Offset, Size, Type</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Offset, Size, Type</span></td></tr>
+      <tr><td>Nutzen</td><td>Berichtsdaten kompakt halten.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-partition</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Berichtsdaten kompakt halten. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>PartitionNumber Offset Size Type
+1 1048576 31.9 GB Basic</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">PartitionNumber Offset Size Type</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kernspalten filtern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-partition -disknumber 1 | select-object partitionnumber, offset, size, type</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">4.3</span> CSV fuer Bericht exportieren</h2>
+<p><strong>Was und warum:</strong> Tabellenformat ist fuer Review gut nutzbar.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Offset, Size, Type | Export-Csv C:\\Cases\\case01\\notes\\partition-table.csv</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Offset, Size, Type | Export-Csv C:\\Cases\\case01\\notes\\partition-table.csv</span></td></tr>
+      <tr><td>Nutzen</td><td>Tabellenformat ist fuer Review gut nutzbar.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-partition</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Tabellenformat ist fuer Review gut nutzbar. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>CSV exported: C:\\Cases\\case01\\notes\\partition-table.csv</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">CSV exported: C:\\Cases\\case01\\notes\\partition-table.csv</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">CSV fuer Bericht exportieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-partition -disknumber 1 | select-object partitionnumber, offset, size, type | export-csv c:\\cases\\case01\\notes\\partition-table.csv</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">4.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Partitionstabellen strukturiert auswerten. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-Partition -DiskNumber 1</span></td><td>Rohueberblick fuer die Ziel-Disk schaffen.</td></tr>
+      <tr><td><span class="inline-code">Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Offset, Size, Type</span></td><td>Berichtsdaten kompakt halten.</td></tr>
+      <tr><td><span class="inline-code">Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Offset, Size, Type | Export-Csv C:\\Cases\\case01\\notes\\partition-table.csv</span></td><td>Tabellenformat ist fuer Review gut nutzbar.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-partition -disknumber 1
+get-partition -disknumber 1 | select-object partitionnumber, offset, size, type
+get-partition -disknumber 1 | select-object partitionnumber, offset, size, type | export-csv c:\\cases\\case01\\notes\\partition-table.csv</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch04-partitionstabellen">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch05-imaging"] = `<h1 class="chapter-title">Forensisches Imaging</h1>
+<div class="chapter-subtitle">Imaging-Prozess nachvollziehbar durchfuehren</div>
+<p class="chapter-intro">Das Device ist identifiziert. Jetzt erzeugst du forensische Abbilder mit klarer Dokumentation.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Das Device ist identifiziert. Jetzt erzeugst du forensische Abbilder mit klarer Dokumentation.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 5.1 bis 5.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 5.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">5.1</span> E01-Abbild erstellen</h2>
+<p><strong>Was und warum:</strong> E01 ist das Standardformat, wenn du ein nachvollziehbares Abbild mit Metadaten brauchst.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>ftkimager.exe --create-image \\\\.\\PhysicalDrive1 E01 C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">ftkimager.exe --create-image \\\\.\\PhysicalDrive1 E01 C:\\Cases\\case01\\images\\disk1.E01</span></td></tr>
+      <tr><td>Nutzen</td><td>Gerichtsnahes Arbeitsformat mit Fallinformationen und klarer Dateistruktur.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">ftkimager.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Vor dem Start immer Quelle und Zielpfad laut notieren. So reduzierst du Verwechslungsfehler auf ein Minimum.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Acquisition started...
+Destination: C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Acquisition started...</span></td><td>Der Imaging-Prozess wurde gestartet.</td></tr>
+      <tr><td><span class="inline-code">Destination: ...disk1.E01</span></td><td>Zeigt eindeutig, wohin das Abbild geschrieben wird.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">E01-Abbild erstellen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>ftkimager.exe --create-image \\\\.\\physicaldrive1 e01 c:\\cases\\case01\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe in der Ausgabe, ob Quelle und Zielpfad korrekt sind.</li>
+        <li>Notiere Startzeit, Quelle und Zielpfad in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">5.2</span> Raw-Abbild erzeugen</h2>
+<p><strong>Was und warum:</strong> RAW ist das direkte Byte-Abbild ohne Container-Metadaten und hilft beim Formatvergleich.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>dd.exe if=\\\\.\\PhysicalDrive1 of=C:\\Cases\\case01\\images\\disk1.raw</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">dd.exe if=\\\\.\\PhysicalDrive1 of=C:\\Cases\\case01\\images\\disk1.raw</span></td></tr>
+      <tr><td>Nutzen</td><td>Bitgenaue Kopie im einfachen Rohformat fuer Tool- und Kompatibilitaetstests.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">dd.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>RAW ist oft gross und unkomprimiert. Plane Speicherplatz vor dem Start mit ein.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>dd.exe: wrote C:\\Cases\\case01\\images\\disk1.raw</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">dd.exe: wrote ...disk1.raw</span></td><td>Die Ausgabedatei wurde geschrieben.</td></tr>
+      <tr><td><span class="inline-code">disk1.raw</span></td><td>Name und Endung zeigen, dass das RAW-Ziel korrekt gesetzt war.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Raw-Abbild erzeugen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>dd.exe if=\\\\.\\physicaldrive1 of=c:\\cases\\case01\\images\\disk1.raw</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe, ob die Ausgabe die erwartete RAW-Datei nennt.</li>
+        <li>Notiere Dateiname, Speicherort und Zweck (RAW-Vergleichsabbild).</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">5.3</span> Image verifizieren</h2>
+<p><strong>Was und warum:</strong> Ohne Verifikation bleibt jedes Image fachlich unvollstaendig und nicht belastbar.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>aim_cli.exe verify-image C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">aim_cli.exe verify-image C:\\Cases\\case01\\images\\disk1.E01</span></td></tr>
+      <tr><td>Nutzen</td><td>Prueft, ob das erzeugte Abbild konsistent und ohne erkennbare Fehler vorliegt.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">aim_cli.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Analyse startest du erst dann, wenn die Verifikation erfolgreich ist.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Verification started...
+Status: OK
+Image: C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Status: OK</span></td><td>Die Verifikation wurde erfolgreich abgeschlossen.</td></tr>
+      <tr><td><span class="inline-code">Image: ...disk1.E01</span></td><td>Zeigt, auf welches konkrete Abbild sich das Ergebnis bezieht.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Image verifizieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>aim_cli.exe verify-image c:\\cases\\case01\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe, ob <span class="inline-code">Status: OK</span> erscheint.</li>
+        <li>Dokumentiere das Ergebnis als "verifiziert" oder "neu sichern".</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">5.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Imaging ist erst dann sauber abgeschlossen, wenn Erstellung, Formatwahl und Verifikation dokumentiert sind.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">ftkimager.exe --create-image \\\\.\\PhysicalDrive1 E01 C:\\Cases\\case01\\images\\disk1.E01</span></td><td>E01-Abbild mit Metadaten erstellen.</td></tr>
+      <tr><td><span class="inline-code">dd.exe if=\\\\.\\PhysicalDrive1 of=C:\\Cases\\case01\\images\\disk1.raw</span></td><td>RAW-Abbild als Vergleichsformat erstellen.</td></tr>
+      <tr><td><span class="inline-code">aim_cli.exe verify-image C:\\Cases\\case01\\images\\disk1.E01</span></td><td>Integritaet des E01-Abbilds pruefen.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Quelle/Ziel verwechselt:</strong> kritisches Risiko fuer Datenverlust.</li>
+    <li><strong>Verifikation ausgelassen:</strong> Image ist fachlich nicht freigegeben.</li>
+    <li><strong>Format nicht begruendet:</strong> Entscheidung im Bericht schwer nachvollziehbar.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>ftkimager.exe --create-image \\\\.\\physicaldrive1 e01 c:\\cases\\case01\\images\\disk1.e01
+dd.exe if=\\\\.\\physicaldrive1 of=c:\\cases\\case01\\images\\disk1.raw
+aim_cli.exe verify-image c:\\cases\\case01\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Entscheide am Ende explizit: "Image freigegeben" oder "neu sichern".</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch05-imaging">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch06-image-formate"] = `<h1 class="chapter-title">Image-Formate</h1>
+<div class="chapter-subtitle">Image-Formate vergleichen und einordnen</div>
+<p class="chapter-intro">Im Fall liegen mehrere Abbilder. Du musst Formatwahl und Integritaet begruendet darstellen.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Im Fall liegen mehrere Abbilder. Du musst Formatwahl und Integritaet begruendet darstellen.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 6.1 bis 6.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 6.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">6.1</span> Image-Bestand auflisten</h2>
+<p><strong>Was und warum:</strong> Erst wissen, was tatsaechlich vorliegt.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-ChildItem C:\\Cases\\case01\\images</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-ChildItem C:\\Cases\\case01\\images</span></td></tr>
+      <tr><td>Nutzen</td><td>Erst wissen, was tatsaechlich vorliegt.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-childitem</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Erst wissen, was tatsaechlich vorliegt. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Name Length
+disk1.E01 32000MB
+disk1.raw 32000MB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Name Length</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Image-Bestand auflisten</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-childitem c:\\cases\\case01\\images</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">6.2</span> Formate ueber Hash vergleichen</h2>
+<p><strong>Was und warum:</strong> Technischer Vergleich statt Vermutung.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Compare-Object (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01) (Get-FileHash C:\\Cases\\case01\\images\\disk1.raw)</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Compare-Object (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01) (Get-FileHash C:\\Cases\\case01\\images\\disk1.raw)</span></td></tr>
+      <tr><td>Nutzen</td><td>Technischer Vergleich statt Vermutung.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">compare-object</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Technischer Vergleich statt Vermutung. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>InputObject SideIndicator
+ABC123 <=
+DEF456 =></code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">InputObject SideIndicator</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Formate ueber Hash vergleichen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>compare-object (get-filehash c:\\cases\\case01\\images\\disk1.e01) (get-filehash c:\\cases\\case01\\images\\disk1.raw)</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">6.3</span> Referenzhash dokumentieren</h2>
+<p><strong>Was und warum:</strong> Mindestens ein Leit-Hash muss im Bericht stehen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-FileHash C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\images\\disk1.E01</span></td></tr>
+      <tr><td>Nutzen</td><td>Mindestens ein Leit-Hash muss im Bericht stehen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-filehash</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Mindestens ein Leit-Hash muss im Bericht stehen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Algorithm Hash Path
+SHA256 A1B2... C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Algorithm Hash Path</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Referenzhash dokumentieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-filehash c:\\cases\\case01\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">6.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Image-Formate vergleichen und einordnen. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-ChildItem C:\\Cases\\case01\\images</span></td><td>Erst wissen, was tatsaechlich vorliegt.</td></tr>
+      <tr><td><span class="inline-code">Compare-Object (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01) (Get-FileHash C:\\Cases\\case01\\images\\disk1.raw)</span></td><td>Technischer Vergleich statt Vermutung.</td></tr>
+      <tr><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\images\\disk1.E01</span></td><td>Mindestens ein Leit-Hash muss im Bericht stehen.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-childitem c:\\cases\\case01\\images
+compare-object (get-filehash c:\\cases\\case01\\images\\disk1.e01) (get-filehash c:\\cases\\case01\\images\\disk1.raw)
+get-filehash c:\\cases\\case01\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch06-image-formate">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch07-hashing"] = `<h1 class="chapter-title">Hashing und Integritaet</h1>
+<div class="chapter-subtitle">Hashing als Integritaetsnachweis anwenden</div>
+<p class="chapter-intro">Du musst belegen, dass ein Abbild unveraendert und reproduzierbar pruefbar ist.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du musst belegen, dass ein Abbild unveraendert und reproduzierbar pruefbar ist.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 7.1 bis 7.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 7.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">7.1</span> Hash mit PowerShell berechnen</h2>
+<p><strong>Was und warum:</strong> Get-FileHash ist der Standard im Workflow.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-FileHash C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\images\\disk1.E01</span></td></tr>
+      <tr><td>Nutzen</td><td>Get-FileHash ist der Standard im Workflow.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-filehash</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Get-FileHash ist der Standard im Workflow. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Algorithm Hash Path
+SHA256 8F2A... C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Algorithm Hash Path</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Hash mit PowerShell berechnen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-filehash c:\\cases\\case01\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">7.2</span> Hash mit certutil gegenpruefen</h2>
+<p><strong>Was und warum:</strong> Zweiter Weg fuer robusten Nachweis.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>certutil -hashfile C:\\Cases\\case01\\images\\disk1.E01 SHA256</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">certutil -hashfile C:\\Cases\\case01\\images\\disk1.E01 SHA256</span></td></tr>
+      <tr><td>Nutzen</td><td>Zweiter Weg fuer robusten Nachweis.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">certutil</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Zweiter Weg fuer robusten Nachweis. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>SHA256 hash of file ...
+8f2a...
+completed successfully</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">SHA256 hash of file ...</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Hash mit certutil gegenpruefen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>certutil -hashfile c:\\cases\\case01\\images\\disk1.e01 sha256</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">7.3</span> Hashwerte vergleichen</h2>
+<p><strong>Was und warum:</strong> Keine Differenz bedeutet stabile Integritaetsaussage.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Compare-Object (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01) (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01)</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Compare-Object (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01) (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01)</span></td></tr>
+      <tr><td>Nutzen</td><td>Keine Differenz bedeutet stabile Integritaetsaussage.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">compare-object</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Keine Differenz bedeutet stabile Integritaetsaussage. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>(keine Ausgabe)</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">(keine Ausgabe)</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Hashwerte vergleichen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>compare-object (get-filehash c:\\cases\\case01\\images\\disk1.e01) (get-filehash c:\\cases\\case01\\images\\disk1.e01)</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">7.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Hashing als Integritaetsnachweis anwenden. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\images\\disk1.E01</span></td><td>Get-FileHash ist der Standard im Workflow.</td></tr>
+      <tr><td><span class="inline-code">certutil -hashfile C:\\Cases\\case01\\images\\disk1.E01 SHA256</span></td><td>Zweiter Weg fuer robusten Nachweis.</td></tr>
+      <tr><td><span class="inline-code">Compare-Object (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01) (Get-FileHash C:\\Cases\\case01\\images\\disk1.E01)</span></td><td>Keine Differenz bedeutet stabile Integritaetsaussage.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-filehash c:\\cases\\case01\\images\\disk1.e01
+certutil -hashfile c:\\cases\\case01\\images\\disk1.e01 sha256
+compare-object (get-filehash c:\\cases\\case01\\images\\disk1.e01) (get-filehash c:\\cases\\case01\\images\\disk1.e01)</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch07-hashing">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch08-mounting"] = `<h1 class="chapter-title">Read-only Mounting</h1>
+<div class="chapter-subtitle">Mounting-Schritte kontrolliert ausfuehren</div>
+<p class="chapter-intro">Ein Abbild soll gelesen werden, ohne den forensischen Kontext zu verlieren.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Ein Abbild soll gelesen werden, ohne den forensischen Kontext zu verlieren.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 8.1 bis 8.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 8.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">8.1</span> Image einbinden</h2>
+<p><strong>Was und warum:</strong> Zugriff auf Inhalte erst nach definiertem Mount.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>aim_cli.exe mount-image C:\\Cases\\case01\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">aim_cli.exe mount-image C:\\Cases\\case01\\images\\disk1.E01</span></td></tr>
+      <tr><td>Nutzen</td><td>Zugriff auf Inhalte erst nach definiertem Mount.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">aim_cli.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Zugriff auf Inhalte erst nach definiertem Mount. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Image mounted as volume E:</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Image mounted as volume E:</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Image einbinden</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>aim_cli.exe mount-image c:\\cases\\case01\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">8.2</span> Volume-Sicht pruefen</h2>
+<p><strong>Was und warum:</strong> Der Mount muss in der Systemsicht sichtbar sein.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Volume</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Volume</span></td></tr>
+      <tr><td>Nutzen</td><td>Der Mount muss in der Systemsicht sichtbar sein.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-volume</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Der Mount muss in der Systemsicht sichtbar sein. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>DriveLetter FileSystem Label
+E NTFS E01_MOUNT</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">DriveLetter FileSystem Label</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Volume-Sicht pruefen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-volume</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">8.3</span> Inhaltscheck ausfuehren</h2>
+<p><strong>Was und warum:</strong> Erste Plausibilitaet ueber Verzeichnisstruktur.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-ChildItem E:\\</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-ChildItem E:\\</span></td></tr>
+      <tr><td>Nutzen</td><td>Erste Plausibilitaet ueber Verzeichnisstruktur.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-childitem</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Erste Plausibilitaet ueber Verzeichnisstruktur. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Name
+Users
+Windows
+pagefile.sys</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Name</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Inhaltscheck ausfuehren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-childitem e:\\</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">8.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Mounting-Schritte kontrolliert ausfuehren. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">aim_cli.exe mount-image C:\\Cases\\case01\\images\\disk1.E01</span></td><td>Zugriff auf Inhalte erst nach definiertem Mount.</td></tr>
+      <tr><td><span class="inline-code">Get-Volume</span></td><td>Der Mount muss in der Systemsicht sichtbar sein.</td></tr>
+      <tr><td><span class="inline-code">Get-ChildItem E:\\</span></td><td>Erste Plausibilitaet ueber Verzeichnisstruktur.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>aim_cli.exe mount-image c:\\cases\\case01\\images\\disk1.e01
+get-volume
+get-childitem e:\\</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch08-mounting">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch09-hex-binaer"] = `<h1 class="chapter-title">Hex- und Binaeranalyse</h1>
+<div class="chapter-subtitle">Hex- und Binaerdaten praxisnah lesen</div>
+<p class="chapter-intro">Du analysierst Rohdaten und suchst Header, Strings und technische Hinweise.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du analysierst Rohdaten und suchst Header, Strings und technische Hinweise.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 9.1 bis 9.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 9.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">9.1</span> Hexansicht starten</h2>
+<p><strong>Was und warum:</strong> Direkter Blick auf Rohbytes.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Format-Hex C:\\Cases\\case01\\evidence\\artifact.bin</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Format-Hex C:\\Cases\\case01\\evidence\\artifact.bin</span></td></tr>
+      <tr><td>Nutzen</td><td>Direkter Blick auf Rohbytes.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">format-hex</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Direkter Blick auf Rohbytes. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Offset Bytes Ascii
+00000000 4D 5A ... MZ..</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Offset Bytes Ascii</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Hexansicht starten</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>format-hex c:\\cases\\case01\\evidence\\artifact.bin</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">9.2</span> Strings extrahieren</h2>
+<p><strong>Was und warum:</strong> Schneller Klartext-Hinweis in binaeren Dateien.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>strings.exe C:\\Cases\\case01\\evidence\\artifact.bin</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\artifact.bin</span></td></tr>
+      <tr><td>Nutzen</td><td>Schneller Klartext-Hinweis in binaeren Dateien.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">strings.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Schneller Klartext-Hinweis in binaeren Dateien. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>MZ
+This program cannot be run in DOS mode</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">MZ</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Strings extrahieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>strings.exe c:\\cases\\case01\\evidence\\artifact.bin</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">9.3</span> Strings gezielt filtern</h2>
+<p><strong>Was und warum:</strong> Nur relevante Treffer fuer den Befund sehen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>strings.exe C:\\Cases\\case01\\evidence\\artifact.bin | findstr /i "password token"</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\artifact.bin | findstr /i "password token"</span></td></tr>
+      <tr><td>Nutzen</td><td>Nur relevante Treffer fuer den Befund sehen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">strings.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Nur relevante Treffer fuer den Befund sehen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>password_reset_token
+api_password_hint</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">password_reset_token</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Strings gezielt filtern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>strings.exe c:\\cases\\case01\\evidence\\artifact.bin | findstr /i "password token"</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">9.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Hex- und Binaerdaten praxisnah lesen. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Format-Hex C:\\Cases\\case01\\evidence\\artifact.bin</span></td><td>Direkter Blick auf Rohbytes.</td></tr>
+      <tr><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\artifact.bin</span></td><td>Schneller Klartext-Hinweis in binaeren Dateien.</td></tr>
+      <tr><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\artifact.bin | findstr /i "password token"</span></td><td>Nur relevante Treffer fuer den Befund sehen.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>format-hex c:\\cases\\case01\\evidence\\artifact.bin
+strings.exe c:\\cases\\case01\\evidence\\artifact.bin
+strings.exe c:\\cases\\case01\\evidence\\artifact.bin | findstr /i "password token"</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch09-hex-binaer">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch10-vergleich"] = `<h1 class="chapter-title">Datei- und Artefaktvergleich</h1>
+<div class="chapter-subtitle">Vergleiche systematisch und nachvollziehbar durchfuehren</div>
+<p class="chapter-intro">Du hast Baseline und Verdachtsstand und musst Unterschiede sauber nachweisen.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du hast Baseline und Verdachtsstand und musst Unterschiede sauber nachweisen.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 10.1 bis 10.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 10.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">10.1</span> Ordnerinhalte vergleichen</h2>
+<p><strong>Was und warum:</strong> Schneller Ueberblick ueber strukturelle Unterschiede.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Compare-Object (Get-ChildItem C:\\Cases\\case01\\baseline) (Get-ChildItem C:\\Cases\\case01\\suspect)</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Compare-Object (Get-ChildItem C:\\Cases\\case01\\baseline) (Get-ChildItem C:\\Cases\\case01\\suspect)</span></td></tr>
+      <tr><td>Nutzen</td><td>Schneller Ueberblick ueber strukturelle Unterschiede.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">compare-object</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Schneller Ueberblick ueber strukturelle Unterschiede. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>InputObject SideIndicator
+report.docx =></code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">InputObject SideIndicator</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Ordnerinhalte vergleichen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>compare-object (get-childitem c:\\cases\\case01\\baseline) (get-childitem c:\\cases\\case01\\suspect)</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">10.2</span> Dateiinhalt hashen</h2>
+<p><strong>Was und warum:</strong> Namensgleichheit reicht nicht, Inhalt muss geprueft werden.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-FileHash C:\\Cases\\case01\\suspect\\report.docx</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\suspect\\report.docx</span></td></tr>
+      <tr><td>Nutzen</td><td>Namensgleichheit reicht nicht, Inhalt muss geprueft werden.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-filehash</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Namensgleichheit reicht nicht, Inhalt muss geprueft werden. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Algorithm Hash Path
+SHA256 99AA... C:\\Cases\\case01\\suspect\\report.docx</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Algorithm Hash Path</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Dateiinhalt hashen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-filehash c:\\cases\\case01\\suspect\\report.docx</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">10.3</span> Vergleichsreport speichern</h2>
+<p><strong>Was und warum:</strong> Differenzen muessen reviewbar abgelegt sein.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Compare-Object (Get-ChildItem C:\\Cases\\case01\\baseline) (Get-ChildItem C:\\Cases\\case01\\suspect) | Out-File C:\\Cases\\case01\\notes\\diff-report.txt</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Compare-Object (Get-ChildItem C:\\Cases\\case01\\baseline) (Get-ChildItem C:\\Cases\\case01\\suspect) | Out-File C:\\Cases\\case01\\notes\\diff-report.txt</span></td></tr>
+      <tr><td>Nutzen</td><td>Differenzen muessen reviewbar abgelegt sein.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">compare-object</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Differenzen muessen reviewbar abgelegt sein. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Output written to C:\\Cases\\case01\\notes\\diff-report.txt</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Output written to C:\\Cases\\case01\\notes\\diff-report.txt</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Vergleichsreport speichern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>compare-object (get-childitem c:\\cases\\case01\\baseline) (get-childitem c:\\cases\\case01\\suspect) | out-file c:\\cases\\case01\\notes\\diff-report.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">10.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Vergleiche systematisch und nachvollziehbar durchfuehren. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Compare-Object (Get-ChildItem C:\\Cases\\case01\\baseline) (Get-ChildItem C:\\Cases\\case01\\suspect)</span></td><td>Schneller Ueberblick ueber strukturelle Unterschiede.</td></tr>
+      <tr><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\suspect\\report.docx</span></td><td>Namensgleichheit reicht nicht, Inhalt muss geprueft werden.</td></tr>
+      <tr><td><span class="inline-code">Compare-Object (Get-ChildItem C:\\Cases\\case01\\baseline) (Get-ChildItem C:\\Cases\\case01\\suspect) | Out-File C:\\Cases\\case01\\notes\\diff-report.txt</span></td><td>Differenzen muessen reviewbar abgelegt sein.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>compare-object (get-childitem c:\\cases\\case01\\baseline) (get-childitem c:\\cases\\case01\\suspect)
+get-filehash c:\\cases\\case01\\suspect\\report.docx
+compare-object (get-childitem c:\\cases\\case01\\baseline) (get-childitem c:\\cases\\case01\\suspect) | out-file c:\\cases\\case01\\notes\\diff-report.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch10-vergleich">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch11-strings-filter"] = `<h1 class="chapter-title">Strings, Pipes und Filter</h1>
+<div class="chapter-subtitle">Strings-Funde filtern und dokumentieren</div>
+<p class="chapter-intro">In grossen Rohdaten suchst du gezielt nach Hinweisen auf Zugangsdaten und Tokens.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">In grossen Rohdaten suchst du gezielt nach Hinweisen auf Zugangsdaten und Tokens.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 11.1 bis 11.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 11.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">11.1</span> Vollstaendige Strings ziehen</h2>
+<p><strong>Was und warum:</strong> Rohbasis fuer alle weiteren Filter.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>strings.exe C:\\Cases\\case01\\evidence\\memory.raw</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\memory.raw</span></td></tr>
+      <tr><td>Nutzen</td><td>Rohbasis fuer alle weiteren Filter.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">strings.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Rohbasis fuer alle weiteren Filter. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>login
+user=admin
+password_hint</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">login</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Vollstaendige Strings ziehen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>strings.exe c:\\cases\\case01\\evidence\\memory.raw</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">11.2</span> Treffer eingrenzen</h2>
+<p><strong>Was und warum:</strong> Signal-zu-Rauschen durch Suchbegriffe verbessern.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>strings.exe C:\\Cases\\case01\\evidence\\memory.raw | findstr /i "password token login"</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\memory.raw | findstr /i "password token login"</span></td></tr>
+      <tr><td>Nutzen</td><td>Signal-zu-Rauschen durch Suchbegriffe verbessern.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">strings.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Signal-zu-Rauschen durch Suchbegriffe verbessern. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>login=service_account
+password_reset_token=...</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">login=service_account</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Treffer eingrenzen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>strings.exe c:\\cases\\case01\\evidence\\memory.raw | findstr /i "password token login"</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">11.3</span> Trefferliste speichern</h2>
+<p><strong>Was und warum:</strong> Fundstellen muessen spaeter zitierbar sein.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>strings.exe C:\\Cases\\case01\\evidence\\memory.raw | findstr /i "password token login" | Out-File C:\\Cases\\case01\\notes\\strings-hits.txt</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\memory.raw | findstr /i "password token login" | Out-File C:\\Cases\\case01\\notes\\strings-hits.txt</span></td></tr>
+      <tr><td>Nutzen</td><td>Fundstellen muessen spaeter zitierbar sein.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">strings.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Fundstellen muessen spaeter zitierbar sein. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Output written to C:\\Cases\\case01\\notes\\strings-hits.txt</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Output written to C:\\Cases\\case01\\notes\\strings-hits.txt</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Trefferliste speichern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>strings.exe c:\\cases\\case01\\evidence\\memory.raw | findstr /i "password token login" | out-file c:\\cases\\case01\\notes\\strings-hits.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">11.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Strings-Funde filtern und dokumentieren. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\memory.raw</span></td><td>Rohbasis fuer alle weiteren Filter.</td></tr>
+      <tr><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\memory.raw | findstr /i "password token login"</span></td><td>Signal-zu-Rauschen durch Suchbegriffe verbessern.</td></tr>
+      <tr><td><span class="inline-code">strings.exe C:\\Cases\\case01\\evidence\\memory.raw | findstr /i "password token login" | Out-File C:\\Cases\\case01\\notes\\strings-hits.txt</span></td><td>Fundstellen muessen spaeter zitierbar sein.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>strings.exe c:\\cases\\case01\\evidence\\memory.raw
+strings.exe c:\\cases\\case01\\evidence\\memory.raw | findstr /i "password token login"
+strings.exe c:\\cases\\case01\\evidence\\memory.raw | findstr /i "password token login" | out-file c:\\cases\\case01\\notes\\strings-hits.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch11-strings-filter">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch12-dateisysteme"] = `<h1 class="chapter-title">Dateisysteme und Artefakte</h1>
+<div class="chapter-subtitle">Dateisysteme fuer forensische Analyse einordnen</div>
+<p class="chapter-intro">Du musst Dateisystemtyp, Partitionierung und Struktur zusammenhaengend bewerten.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du musst Dateisystemtyp, Partitionierung und Struktur zusammenhaengend bewerten.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 12.1 bis 12.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 12.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">12.1</span> Dateisystemtyp anzeigen</h2>
+<p><strong>Was und warum:</strong> Dateisystem setzt den Analysekontext.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Volume</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Volume</span></td></tr>
+      <tr><td>Nutzen</td><td>Dateisystem setzt den Analysekontext.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-volume</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Dateisystem setzt den Analysekontext. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>DriveLetter FileSystem
+E NTFS</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">DriveLetter FileSystem</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Dateisystemtyp anzeigen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-volume</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">12.2</span> Partitionsdaten filtern</h2>
+<p><strong>Was und warum:</strong> Technische Kernwerte fuer Bericht sichern.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Type, Size, Offset</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Type, Size, Offset</span></td></tr>
+      <tr><td>Nutzen</td><td>Technische Kernwerte fuer Bericht sichern.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-partition</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Technische Kernwerte fuer Bericht sichern. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>PartitionNumber Type Size Offset
+1 Basic 31.9 GB 1048576</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">PartitionNumber Type Size Offset</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Partitionsdaten filtern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-partition -disknumber 1 | select-object partitionnumber, type, size, offset</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">12.3</span> Struktur aufnehmen</h2>
+<p><strong>Was und warum:</strong> Erstaufnahme der Verzeichnisstruktur dokumentieren.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-ChildItem E:\\</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-ChildItem E:\\</span></td></tr>
+      <tr><td>Nutzen</td><td>Erstaufnahme der Verzeichnisstruktur dokumentieren.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-childitem</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Erstaufnahme der Verzeichnisstruktur dokumentieren. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Name
+Users
+ProgramData
+evidence.log</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Name</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Struktur aufnehmen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-childitem e:\\</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">12.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Dateisysteme fuer forensische Analyse einordnen. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-Volume</span></td><td>Dateisystem setzt den Analysekontext.</td></tr>
+      <tr><td><span class="inline-code">Get-Partition -DiskNumber 1 | Select-Object PartitionNumber, Type, Size, Offset</span></td><td>Technische Kernwerte fuer Bericht sichern.</td></tr>
+      <tr><td><span class="inline-code">Get-ChildItem E:\\</span></td><td>Erstaufnahme der Verzeichnisstruktur dokumentieren.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-volume
+get-partition -disknumber 1 | select-object partitionnumber, type, size, offset
+get-childitem e:\\</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch12-dateisysteme">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch13-sicher-loeschen"] = `<h1 class="chapter-title">Datentraeger sicher loeschen</h1>
+<div class="chapter-subtitle">Sicheres Loeschen fachlich pruefen</div>
+<p class="chapter-intro">Im Fall soll geklaert werden, ob ein Datentraeger absichtlich geloescht oder vorbereitet wurde.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Im Fall soll geklaert werden, ob ein Datentraeger absichtlich geloescht oder vorbereitet wurde.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 13.1 bis 13.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 13.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">13.1</span> Vorherhash sichern</h2>
+<p><strong>Was und warum:</strong> Vergleich braucht einen klaren Ausgangswert.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-FileHash C:\\Cases\\case01\\evidence\\wipe-target.img</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\evidence\\wipe-target.img</span></td></tr>
+      <tr><td>Nutzen</td><td>Vergleich braucht einen klaren Ausgangswert.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-filehash</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Vergleich braucht einen klaren Ausgangswert. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Algorithm Hash
+SHA256 1A1B...</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Algorithm Hash</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Vorherhash sichern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-filehash c:\\cases\\case01\\evidence\\wipe-target.img</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">13.2</span> diskpart-Skript ausfuehren</h2>
+<p><strong>Was und warum:</strong> Typischer Automationsweg fuer Datentraegerschritte.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>diskpart /s C:\\Cases\\case01\\scripts\\wipe-usb.txt</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">diskpart /s C:\\Cases\\case01\\scripts\\wipe-usb.txt</span></td></tr>
+      <tr><td>Nutzen</td><td>Typischer Automationsweg fuer Datentraegerschritte.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">diskpart</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Typischer Automationsweg fuer Datentraegerschritte. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>DiskPart successfully processed the script.</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">DiskPart successfully processed the script.</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">diskpart-Skript ausfuehren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>diskpart /s c:\\cases\\case01\\scripts\\wipe-usb.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">13.3</span> Nachherhash pruefen</h2>
+<p><strong>Was und warum:</strong> Vorher/Nachher nur mit gleicher Referenzdatei vergleichen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-FileHash C:\\Cases\\case01\\evidence\\wipe-target.img</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\evidence\\wipe-target.img</span></td></tr>
+      <tr><td>Nutzen</td><td>Vorher/Nachher nur mit gleicher Referenzdatei vergleichen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-filehash</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Vorher/Nachher nur mit gleicher Referenzdatei vergleichen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Algorithm Hash
+SHA256 7F7E...</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Algorithm Hash</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Nachherhash pruefen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-filehash c:\\cases\\case01\\evidence\\wipe-target.img</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">13.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Sicheres Loeschen fachlich pruefen. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\evidence\\wipe-target.img</span></td><td>Vergleich braucht einen klaren Ausgangswert.</td></tr>
+      <tr><td><span class="inline-code">diskpart /s C:\\Cases\\case01\\scripts\\wipe-usb.txt</span></td><td>Typischer Automationsweg fuer Datentraegerschritte.</td></tr>
+      <tr><td><span class="inline-code">Get-FileHash C:\\Cases\\case01\\evidence\\wipe-target.img</span></td><td>Vorher/Nachher nur mit gleicher Referenzdatei vergleichen.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-filehash c:\\cases\\case01\\evidence\\wipe-target.img
+diskpart /s c:\\cases\\case01\\scripts\\wipe-usb.txt
+get-filehash c:\\cases\\case01\\evidence\\wipe-target.img</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch13-sicher-loeschen">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch14-write-blocker"] = `<h1 class="chapter-title">Write-Blocker und Schutzmassnahmen</h1>
+<div class="chapter-subtitle">Write-Blocker-Status sicher verifizieren</div>
+<p class="chapter-intro">Vor jedem Zugriff auf Beweismittel muss der Schreibschutz technisch und dokumentativ abgesichert sein.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Vor jedem Zugriff auf Beweismittel muss der Schreibschutz technisch und dokumentativ abgesichert sein.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 14.1 bis 14.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 14.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">14.1</span> Datentraegerbasis lesen</h2>
+<p><strong>Was und warum:</strong> Richtiges Zielgeraet zuerst festlegen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Disk</span></td></tr>
+      <tr><td>Nutzen</td><td>Richtiges Zielgeraet zuerst festlegen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-disk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Richtiges Zielgeraet zuerst festlegen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Number FriendlyName BusType
+1 USB Evidence USB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Number FriendlyName BusType</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Datentraegerbasis lesen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">14.2</span> Read-Only-Felder filtern</h2>
+<p><strong>Was und warum:</strong> Kontrolle auf die entscheidenden Felder fokussieren.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk | Select-Object Number, FriendlyName, IsReadOnly, BusType</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, IsReadOnly, BusType</span></td></tr>
+      <tr><td>Nutzen</td><td>Kontrolle auf die entscheidenden Felder fokussieren.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-disk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Kontrolle auf die entscheidenden Felder fokussieren. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Number FriendlyName IsReadOnly BusType
+1 USB Evidence True USB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Number FriendlyName IsReadOnly BusType</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Read-Only-Felder filtern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk | select-object number, friendlyname, isreadonly, bustype</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">14.3</span> Write-Blocker-Check sichern</h2>
+<p><strong>Was und warum:</strong> Kontrollergebnis fuer Bericht ablegen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk | Select-Object Number, FriendlyName, IsReadOnly, BusType | Out-File C:\\Cases\\case01\\notes\\write-blocker-check.txt</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, IsReadOnly, BusType | Out-File C:\\Cases\\case01\\notes\\write-blocker-check.txt</span></td></tr>
+      <tr><td>Nutzen</td><td>Kontrollergebnis fuer Bericht ablegen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-disk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Kontrollergebnis fuer Bericht ablegen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Output written to C:\\Cases\\case01\\notes\\write-blocker-check.txt</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Output written to C:\\Cases\\case01\\notes\\write-blocker-check.txt</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Write-Blocker-Check sichern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk | select-object number, friendlyname, isreadonly, bustype | out-file c:\\cases\\case01\\notes\\write-blocker-check.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">14.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Write-Blocker-Status sicher verifizieren. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-Disk</span></td><td>Richtiges Zielgeraet zuerst festlegen.</td></tr>
+      <tr><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, IsReadOnly, BusType</span></td><td>Kontrolle auf die entscheidenden Felder fokussieren.</td></tr>
+      <tr><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, IsReadOnly, BusType | Out-File C:\\Cases\\case01\\notes\\write-blocker-check.txt</span></td><td>Kontrollergebnis fuer Bericht ablegen.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk
+get-disk | select-object number, friendlyname, isreadonly, bustype
+get-disk | select-object number, friendlyname, isreadonly, bustype | out-file c:\\cases\\case01\\notes\\write-blocker-check.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch14-write-blocker">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch15-protokollierung"] = `<h1 class="chapter-title">Protokollierung und Chain of Custody</h1>
+<div class="chapter-subtitle">Protokollierung lueckenlos und sauber fuehren</div>
+<p class="chapter-intro">Deine Analyse ist nur so gut wie die Nachvollziehbarkeit deiner Terminalschritte.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Deine Analyse ist nur so gut wie die Nachvollziehbarkeit deiner Terminalschritte.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 15.1 bis 15.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 15.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">15.1</span> Transcript starten</h2>
+<p><strong>Was und warum:</strong> Protokollierung muss vor dem ersten forensischen Arbeitsschritt aktiv sein.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Start-Transcript -Path C:\\Cases\\case01\\notes\\session.log</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Start-Transcript -Path C:\\Cases\\case01\\notes\\session.log</span></td></tr>
+      <tr><td>Nutzen</td><td>Erzeugt eine belegbare Session-Datei fuer Bericht und Qualitaetspruefung.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">start-transcript</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Wenn das Transcript fehlt, ist spaeter nicht mehr klar, welcher Befehl wann ausgefuehrt wurde.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Transcript started...
+Output file: C:\\Cases\\case01\\notes\\session.log</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Transcript started...</span></td><td>Die Protokollierung ist aktiv.</td></tr>
+      <tr><td><span class="inline-code">Output file: ...session.log</span></td><td>Zeigt den Pfad der Protokolldatei fuer die Fallakte.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Transcript starten</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -path c:\\cases\\case01\\notes\\session.log</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe, ob die Logdatei mit korrektem Pfad ausgegeben wird.</li>
+        <li>Notiere Startzeit und Logpfad in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">15.2</span> Befehlsverlauf pruefen</h2>
+<p><strong>Was und warum:</strong> Mit dem Verlauf pruefst du, ob Pflichtschritte in der richtigen Reihenfolge gelaufen sind.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-History</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-History</span></td></tr>
+      <tr><td>Nutzen</td><td>Zeigt die bisher ausgefuehrten Befehle in zeitlicher Reihenfolge.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-history</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Abweichungen im Verlauf sind ein fruehes Warnsignal fuer fehlerhafte Arbeitsablaeufe.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Id CommandLine
+1 start-transcript ...
+2 get-disk</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Id CommandLine</span></td><td>Tabellenkopf fuer Reihenfolge und ausgefuehrte Befehle.</td></tr>
+      <tr><td><span class="inline-code">1 start-transcript ...</span></td><td>Zeigt, ob die Protokollierung am Anfang stand.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Befehlsverlauf pruefen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-history</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe, ob <span class="inline-code">start-transcript</span> vor den Analysebefehlen steht.</li>
+        <li>Notiere "Reihenfolge korrekt" oder "Reihenfolge fehlerhaft".</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">15.3</span> Transcript beenden</h2>
+<p><strong>Was und warum:</strong> Erst mit sauberem Abschluss ist die Session-Dokumentation vollstaendig.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Stop-Transcript</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Stop-Transcript</span></td></tr>
+      <tr><td>Nutzen</td><td>Beendet das laufende Transcript und schreibt den Abschluss in die Logdatei.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">stop-transcript</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Ohne Abschluss kann die Session-Datei unvollstaendig oder unklar wirken.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Transcript stopped, output file is C:\\Cases\\case01\\notes\\session.log</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Transcript stopped ...</span></td><td>Die Protokollierung wurde beendet.</td></tr>
+      <tr><td><span class="inline-code">output file is ...session.log</span></td><td>Bestaetigt, welche Datei als Abschlussprotokoll gilt.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Transcript beenden</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>stop-transcript</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe, ob die Ausgabe den Abschluss bestaetigt.</li>
+        <li>Notiere Endzeit und finalen Logpfad in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">15.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Protokollierung ist nur dann belastbar, wenn Start, Verlaufskontrolle und Abschluss zusammenpassen.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Start-Transcript -Path C:\\Cases\\case01\\notes\\session.log</span></td><td>Nachweiskette von Anfang an aktivieren.</td></tr>
+      <tr><td><span class="inline-code">Get-History</span></td><td>Reihenfolge und Vollstaendigkeit kontrollieren.</td></tr>
+      <tr><td><span class="inline-code">Stop-Transcript</span></td><td>Session formal korrekt abschliessen.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Transcript zu spaet gestartet:</strong> fruehe Befehle fehlen im Nachweis.</li>
+    <li><strong>Verlauf nicht geprueft:</strong> Reihenfolgefehler bleiben unentdeckt.</li>
+    <li><strong>Transcript nicht beendet:</strong> Session bleibt formal unvollstaendig.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -path c:\\cases\\case01\\notes\\session.log
+get-history
+stop-transcript</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine Abschlussbewertung: "Dokumentation vollstaendig" oder "nacharbeiten".</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch15-protokollierung">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch16-best-practices"] = `<h1 class="chapter-title">Best Practices und typische Fehler</h1>
+<div class="chapter-subtitle">Best Practices fuer reproduzierbare Arbeit anwenden</div>
+<p class="chapter-intro">Du arbeitest nicht nur technisch richtig, sondern auch team- und reviewfaehig.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du arbeitest nicht nur technisch richtig, sondern auch team- und reviewfaehig.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 16.1 bis 16.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 16.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">16.1</span> Standardstart setzen</h2>
+<p><strong>Was und warum:</strong> Protokollierter Start ist Basis jeder Best Practice.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Start-Transcript -Path C:\\Cases\\case01\\notes\\best-practice-session.log</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Start-Transcript -Path C:\\Cases\\case01\\notes\\best-practice-session.log</span></td></tr>
+      <tr><td>Nutzen</td><td>Protokollierter Start ist Basis jeder Best Practice.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">start-transcript</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Protokollierter Start ist Basis jeder Best Practice. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Transcript started...
+Output file: C:\\Cases\\case01\\notes\\best-practice-session.log</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Transcript started...</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Standardstart setzen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -path c:\\cases\\case01\\notes\\best-practice-session.log</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">16.2</span> Kernbefehle pruefen</h2>
+<p><strong>Was und warum:</strong> Verfuegbarkeit frueh pruefen spart Zeit.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Command get-disk, get-partition, get-filehash</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Command get-disk, get-partition, get-filehash</span></td></tr>
+      <tr><td>Nutzen</td><td>Verfuegbarkeit frueh pruefen spart Zeit.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-command</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Verfuegbarkeit frueh pruefen spart Zeit. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>CommandType Name
+Cmdlet get-disk
+Cmdlet get-filehash</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">CommandType Name</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kernbefehle pruefen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-command get-disk, get-partition, get-filehash</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">16.3</span> History exportieren</h2>
+<p><strong>Was und warum:</strong> Verlauf als zusaetzliche Reviewspur sichern.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-History | Out-File C:\\Cases\\case01\\notes\\best-practice-history.txt</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-History | Out-File C:\\Cases\\case01\\notes\\best-practice-history.txt</span></td></tr>
+      <tr><td>Nutzen</td><td>Verlauf als zusaetzliche Reviewspur sichern.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-history</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Verlauf als zusaetzliche Reviewspur sichern. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Output written to C:\\Cases\\case01\\notes\\best-practice-history.txt</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Output written to C:\\Cases\\case01\\notes\\best-practice-history.txt</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">History exportieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-history | out-file c:\\cases\\case01\\notes\\best-practice-history.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">16.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Best Practices fuer reproduzierbare Arbeit anwenden. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Start-Transcript -Path C:\\Cases\\case01\\notes\\best-practice-session.log</span></td><td>Protokollierter Start ist Basis jeder Best Practice.</td></tr>
+      <tr><td><span class="inline-code">Get-Command get-disk, get-partition, get-filehash</span></td><td>Verfuegbarkeit frueh pruefen spart Zeit.</td></tr>
+      <tr><td><span class="inline-code">Get-History | Out-File C:\\Cases\\case01\\notes\\best-practice-history.txt</span></td><td>Verlauf als zusaetzliche Reviewspur sichern.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -path c:\\cases\\case01\\notes\\best-practice-session.log
+get-command get-disk, get-partition, get-filehash
+get-history | out-file c:\\cases\\case01\\notes\\best-practice-history.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch16-best-practices">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch17-casestudy"] = `<h1 class="chapter-title">Case-Studie</h1>
+<div class="chapter-subtitle">Mini-Case von Start bis Erstbefund bearbeiten</div>
+<p class="chapter-intro">Du kombinierst die bisherigen Kernschritte in einem kompakten Fallablauf.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du kombinierst die bisherigen Kernschritte in einem kompakten Fallablauf.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 17.1 bis 17.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 17.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">17.1</span> Case-Session starten</h2>
+<p><strong>Was und warum:</strong> Der Fall braucht ein eigenes Transcript.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Start-Transcript -Path C:\\Cases\\case17\\notes\\case-session.log</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Start-Transcript -Path C:\\Cases\\case17\\notes\\case-session.log</span></td></tr>
+      <tr><td>Nutzen</td><td>Der Fall braucht ein eigenes Transcript.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">start-transcript</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Der Fall braucht ein eigenes Transcript. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Transcript started...
+Output file: C:\\Cases\\case17\\notes\\case-session.log</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Transcript started...</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Case-Session starten</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -path c:\\cases\\case17\\notes\\case-session.log</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">17.2</span> Device und Partition erfassen</h2>
+<p><strong>Was und warum:</strong> Technische Basisdaten vor Analyse sichern.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk
+Get-Partition -DiskNumber 1</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Disk</span></td></tr>
+      <tr><td>Nutzen</td><td>Technische Basisdaten vor Analyse sichern.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-disk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Technische Basisdaten vor Analyse sichern. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Number FriendlyName Size
+1 USB Evidence 32 GB
+DiskNumber PartitionNumber Offset Size
+1 1 1048576 31.9 GB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Number FriendlyName Size</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Device und Partition erfassen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk
+get-partition -disknumber 1</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">17.3</span> Ersthash setzen</h2>
+<p><strong>Was und warum:</strong> Integritaetsanker fuer den Case definieren.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-FileHash C:\\Cases\\case17\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-FileHash C:\\Cases\\case17\\images\\disk1.E01</span></td></tr>
+      <tr><td>Nutzen</td><td>Integritaetsanker fuer den Case definieren.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-filehash</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Integritaetsanker fuer den Case definieren. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Algorithm Hash Path
+SHA256 BEEF... C:\\Cases\\case17\\images\\disk1.E01</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Algorithm Hash Path</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Ersthash setzen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-filehash c:\\cases\\case17\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">17.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Mini-Case von Start bis Erstbefund bearbeiten. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Start-Transcript -Path C:\\Cases\\case17\\notes\\case-session.log</span></td><td>Der Fall braucht ein eigenes Transcript.</td></tr>
+      <tr><td><span class="inline-code">Get-Disk</span></td><td>Technische Basisdaten vor Analyse sichern.</td></tr>
+      <tr><td><span class="inline-code">Get-FileHash C:\\Cases\\case17\\images\\disk1.E01</span></td><td>Integritaetsanker fuer den Case definieren.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -path c:\\cases\\case17\\notes\\case-session.log
+get-disk
+get-partition -disknumber 1
+get-filehash c:\\cases\\case17\\images\\disk1.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch17-casestudy">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch18-kompakt-cheatsheet"] = `<h1 class="chapter-title">Kompaktes Befehls-Cheatsheet</h1>
+<div class="chapter-subtitle">Kompaktes Cheatsheet fuer Einsatzschritte aufbauen</div>
+<p class="chapter-intro">Du brauchst eine kurze, verlaessliche Kommandoliste fuer wiederkehrende Aufgaben.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du brauchst eine kurze, verlaessliche Kommandoliste fuer wiederkehrende Aufgaben.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 18.1 bis 18.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 18.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">18.1</span> Kernkommandos pruefen</h2>
+<p><strong>Was und warum:</strong> Nur verfuegbare Befehle kommen ins Cheatsheet.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Command get-disk, get-partition, get-filehash, strings.exe</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Command get-disk, get-partition, get-filehash, strings.exe</span></td></tr>
+      <tr><td>Nutzen</td><td>Nur verfuegbare Befehle kommen ins Cheatsheet.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-command</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Nur verfuegbare Befehle kommen ins Cheatsheet. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Name
+get-disk
+get-partition
+strings.exe</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Name</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kernkommandos pruefen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-command get-disk, get-partition, get-filehash, strings.exe</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">18.2</span> Cheatsheet speichern</h2>
+<p><strong>Was und warum:</strong> Schnellreferenz als Datei ablegen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Command get-disk, get-partition, get-filehash, strings.exe | Out-File C:\\Cases\\case01\\notes\\cheatsheet.txt</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Command get-disk, get-partition, get-filehash, strings.exe | Out-File C:\\Cases\\case01\\notes\\cheatsheet.txt</span></td></tr>
+      <tr><td>Nutzen</td><td>Schnellreferenz als Datei ablegen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-command</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Schnellreferenz als Datei ablegen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Output written to C:\\Cases\\case01\\notes\\cheatsheet.txt</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Output written to C:\\Cases\\case01\\notes\\cheatsheet.txt</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Cheatsheet speichern</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-command get-disk, get-partition, get-filehash, strings.exe | out-file c:\\cases\\case01\\notes\\cheatsheet.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">18.3</span> Ablage pruefen</h2>
+<p><strong>Was und warum:</strong> Verfuegbarkeit fuer den naechsten Einsatz sichern.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-ChildItem C:\\Cases\\case01\\notes</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-ChildItem C:\\Cases\\case01\\notes</span></td></tr>
+      <tr><td>Nutzen</td><td>Verfuegbarkeit fuer den naechsten Einsatz sichern.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-childitem</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Verfuegbarkeit fuer den naechsten Einsatz sichern. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Name
+cheatsheet.txt
+session.log</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Name</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Ablage pruefen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-childitem c:\\cases\\case01\\notes</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">18.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Kompaktes Cheatsheet fuer Einsatzschritte aufbauen. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-Command get-disk, get-partition, get-filehash, strings.exe</span></td><td>Nur verfuegbare Befehle kommen ins Cheatsheet.</td></tr>
+      <tr><td><span class="inline-code">Get-Command get-disk, get-partition, get-filehash, strings.exe | Out-File C:\\Cases\\case01\\notes\\cheatsheet.txt</span></td><td>Schnellreferenz als Datei ablegen.</td></tr>
+      <tr><td><span class="inline-code">Get-ChildItem C:\\Cases\\case01\\notes</span></td><td>Verfuegbarkeit fuer den naechsten Einsatz sichern.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-command get-disk, get-partition, get-filehash, strings.exe
+get-command get-disk, get-partition, get-filehash, strings.exe | out-file c:\\cases\\case01\\notes\\cheatsheet.txt
+get-childitem c:\\cases\\case01\\notes</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch18-kompakt-cheatsheet">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch19-quellen-standards"] = `<h1 class="chapter-title">Quellen und Standards</h1>
+<div class="chapter-subtitle">Quellen- und Standardbezug praktisch dokumentieren</div>
+<p class="chapter-intro">Du sollst Standards nicht nur nennen, sondern in nachvollziehbare Arbeitsartefakte uebersetzen.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du sollst Standards nicht nur nennen, sondern in nachvollziehbare Arbeitsartefakte uebersetzen.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 19.1 bis 19.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 19.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">19.1</span> Quellenliste anlegen</h2>
+<p><strong>Was und warum:</strong> Tool- und Quellenbasis schriftlich sichern.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Command get-filehash, ftkimager.exe, dd.exe | Out-File C:\\Cases\\case01\\notes\\sources.txt</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Command get-filehash, ftkimager.exe, dd.exe | Out-File C:\\Cases\\case01\\notes\\sources.txt</span></td></tr>
+      <tr><td>Nutzen</td><td>Tool- und Quellenbasis schriftlich sichern.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-command</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Tool- und Quellenbasis schriftlich sichern. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Output written to C:\\Cases\\case01\\notes\\sources.txt</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Output written to C:\\Cases\\case01\\notes\\sources.txt</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Quellenliste anlegen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-command get-filehash, ftkimager.exe, dd.exe | out-file c:\\cases\\case01\\notes\\sources.txt</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">19.2</span> Toolstand pruefen</h2>
+<p><strong>Was und warum:</strong> Standardarbeit braucht klaren Soll/Ist-Abgleich.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Command ftkimager.exe, dd.exe, aim_cli.exe, strings.exe</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Command ftkimager.exe, dd.exe, aim_cli.exe, strings.exe</span></td></tr>
+      <tr><td>Nutzen</td><td>Standardarbeit braucht klaren Soll/Ist-Abgleich.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-command</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Standardarbeit braucht klaren Soll/Ist-Abgleich. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Name
+ftkimager.exe
+dd.exe
+strings.exe</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Name</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Toolstand pruefen</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-command ftkimager.exe, dd.exe, aim_cli.exe, strings.exe</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">19.3</span> Evidenzmap exportieren</h2>
+<p><strong>Was und warum:</strong> Tabellarische Zuordnung vereinfacht Berichte.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size | Export-Csv C:\\Cases\\case01\\notes\\evidence-map.csv</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size | Export-Csv C:\\Cases\\case01\\notes\\evidence-map.csv</span></td></tr>
+      <tr><td>Nutzen</td><td>Tabellarische Zuordnung vereinfacht Berichte.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-disk</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Tabellarische Zuordnung vereinfacht Berichte. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>CSV exported: C:\\Cases\\case01\\notes\\evidence-map.csv</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">CSV exported: C:\\Cases\\case01\\notes\\evidence-map.csv</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Evidenzmap exportieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-disk | select-object number, friendlyname, serialnumber, size | export-csv c:\\cases\\case01\\notes\\evidence-map.csv</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">19.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Quellen- und Standardbezug praktisch dokumentieren. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Get-Command get-filehash, ftkimager.exe, dd.exe | Out-File C:\\Cases\\case01\\notes\\sources.txt</span></td><td>Tool- und Quellenbasis schriftlich sichern.</td></tr>
+      <tr><td><span class="inline-code">Get-Command ftkimager.exe, dd.exe, aim_cli.exe, strings.exe</span></td><td>Standardarbeit braucht klaren Soll/Ist-Abgleich.</td></tr>
+      <tr><td><span class="inline-code">Get-Disk | Select-Object Number, FriendlyName, SerialNumber, Size | Export-Csv C:\\Cases\\case01\\notes\\evidence-map.csv</span></td><td>Tabellarische Zuordnung vereinfacht Berichte.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-command get-filehash, ftkimager.exe, dd.exe | out-file c:\\cases\\case01\\notes\\sources.txt
+get-command ftkimager.exe, dd.exe, aim_cli.exe, strings.exe
+get-disk | select-object number, friendlyname, serialnumber, size | export-csv c:\\cases\\case01\\notes\\evidence-map.csv</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch19-quellen-standards">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch20-tool-installation"] = `<h1 class="chapter-title">Tool-Installation</h1>
+<div class="chapter-subtitle">Toolinstallation reproduzierbar und pruefbar durchziehen</div>
+<p class="chapter-intro">Du richtest eine frische Umgebung ein und validierst alle Kernwerkzeuge.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du richtest eine frische Umgebung ein und validierst alle Kernwerkzeuge.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 20.1 bis 20.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 20.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">20.1</span> Erstes Paket installieren</h2>
+<p><strong>Was und warum:</strong> Installationspfad mit winget testen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>winget install FTKImager.FTKImager</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">winget install FTKImager.FTKImager</span></td></tr>
+      <tr><td>Nutzen</td><td>Installationspfad mit winget testen.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">winget</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Installationspfad mit winget testen. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Found FTKImager.FTKImager
+Successfully installed</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Found FTKImager.FTKImager</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Erstes Paket installieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>winget install ftkimager.ftkimager</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">20.2</span> Zweites Paket installieren</h2>
+<p><strong>Was und warum:</strong> Mehrere Installationen konsistent dokumentieren.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>winget install Sysinternals.Sysinternals</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">winget install Sysinternals.Sysinternals</span></td></tr>
+      <tr><td>Nutzen</td><td>Mehrere Installationen konsistent dokumentieren.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">winget</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Mehrere Installationen konsistent dokumentieren. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Found Sysinternals.Sysinternals
+Successfully installed</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Found Sysinternals.Sysinternals</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Zweites Paket installieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>winget install sysinternals.sysinternals</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">20.3</span> Binaries verifizieren</h2>
+<p><strong>Was und warum:</strong> Einsatzbereit ist das Setup erst nach Command-Check.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Get-Command ftkimager.exe, strings.exe, dd.exe, aim_cli.exe</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Get-Command ftkimager.exe, strings.exe, dd.exe, aim_cli.exe</span></td></tr>
+      <tr><td>Nutzen</td><td>Einsatzbereit ist das Setup erst nach Command-Check.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">get-command</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Einsatzbereit ist das Setup erst nach Command-Check. Dokumentiere den Schritt direkt nach der Ausfuehrung.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Name
+ftkimager.exe
+strings.exe
+dd.exe</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Erste Zeile</td><td><span class="inline-code">Name</span></td></tr>
+      <tr><td>Bedeutung</td><td>Signalisiert, dass der Schritt wie geplant ausgefuehrt wurde.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Binaries verifizieren</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>get-command ftkimager.exe, strings.exe, dd.exe, aim_cli.exe</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl exakt wie gezeigt aus.</li>
+        <li>Pruefe die Ausgabe auf den Kernhinweis.</li>
+        <li>Notiere Ergebnis und kurze Bedeutung in deinen Fallnotizen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">20.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Toolinstallation reproduzierbar und pruefbar durchziehen. Reihenfolge und Dokumentation sind genauso wichtig wie der Befehl selbst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">winget install FTKImager.FTKImager</span></td><td>Installationspfad mit winget testen.</td></tr>
+      <tr><td><span class="inline-code">winget install Sysinternals.Sysinternals</span></td><td>Mehrere Installationen konsistent dokumentieren.</td></tr>
+      <tr><td><span class="inline-code">Get-Command ftkimager.exe, strings.exe, dd.exe, aim_cli.exe</span></td><td>Einsatzbereit ist das Setup erst nach Command-Check.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Schritte vertauscht:</strong> die Nachvollziehbarkeit sinkt sofort.</li>
+    <li><strong>Ausgabe ignoriert:</strong> wichtige Hinweise gehen im Workflow verloren.</li>
+    <li><strong>Nichts notiert:</strong> spaeter fehlt der belegbare Nachweis.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>winget install ftkimager.ftkimager
+winget install sysinternals.sysinternals
+get-command ftkimager.exe, strings.exe, dd.exe, aim_cli.exe</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch20-tool-installation">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
+ContentData["windows-forensik"]["ch21-uebungen"] = `<h1 class="chapter-title">Uebungen</h1>
+<div class="chapter-subtitle">Uebungsparcours mit hohem Praxisanteil</div>
+<p class="chapter-intro">Du loest vier kompakte Aufgaben, die den gesamten Kernworkflow abdecken.</p>
+
+<div class="scenario-box">
+  <div class="scenario-icon">&#127919;</div>
+  <div class="scenario-label">EINSATZ-SZENARIO</div>
+  <div class="scenario-text">Du loest vier kompakte Aufgaben, die den gesamten Kernworkflow abdecken.</div>
+</div>
+
+<div class="callout callout-context">
+  <div class="callout-header">&#9432; Nach diesem Kapitel kannst du</div>
+  <ul>
+    <li>den Kapitelworkflow fachlich einordnen,</li>
+    <li>die Kernbefehle sicher und geordnet ausfuehren,</li>
+    <li>Ergebnisse fuer die Fallakte nachvollziehbar sichern,</li>
+    <li>typische Fehler im Ablauf vermeiden.</li>
+  </ul>
+</div>
+
+<div class="feature-grid chapter-preview-grid">
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#128221;</div>
+    <div class="feature-text">
+      <h3>Slides 21.1 bis 21.3: Ausfuehren</h3>
+      <p>Drei Kernschritte mit Befehl, Ausgabe, Erklaerung und Uebung.</p>
+    </div>
+  </div>
+  <div class="feature-card chapter-preview-card">
+    <div class="feature-icon">&#129504;</div>
+    <div class="feature-text">
+      <h3>Slide 21.4: Transfer</h3>
+      <p>Alle Schritte in einer kompakten Abschluss-Uebung verbinden.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide-nav-hint">&#9654; Nutze oben in der Topbar <span class="inline-code">&lsaquo; Zurueck</span> und <span class="inline-code">Weiter &rsaquo;</span>. Arbeite die Slides nacheinander durch.</div><h2 class="section-title"><span class="number">21.1</span> Uebung 1: Startablauf</h2>
+<p><strong>Was und warum:</strong> Diese Uebung trainiert den kompletten Startblock unter Zeitdruck und mit sauberer Doku.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>Start-Transcript -Path C:\\Cases\\case21\\notes\\exercise1.log
+Get-Disk
+Get-Partition -DiskNumber 1</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">Start-Transcript -Path C:\\Cases\\case21\\notes\\exercise1.log</span></td></tr>
+      <tr><td>Nutzen</td><td>Startet den Fall korrekt und verknuepft Logging, Geraeteauswahl und Partitionssicht.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">start-transcript</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Wenn dieser Startblock sitzt, werden Folgefehler in spaeteren Uebungen deutlich seltener.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Transcript started...
+1 USB Evidence 32 GB
+1 1 1048576 31.9 GB</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Transcript started...</span></td><td>Session-Protokoll aktiv.</td></tr>
+      <tr><td><span class="inline-code">1 USB Evidence 32 GB</span></td><td>Zielgeraet wurde in der Datentraegerliste erkannt.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Uebung 1: Startablauf</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -path c:\\cases\\case21\\notes\\exercise1.log
+get-disk
+get-partition -disknumber 1</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre die drei Befehle exakt in Reihenfolge aus.</li>
+        <li>Notiere Disk-Nummer und Partition-Offset.</li>
+        <li>Halte in einem Satz fest, warum diese Reihenfolge korrekt ist.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">21.2</span> Uebung 2: Imaging plus Hash</h2>
+<p><strong>Was und warum:</strong> Hier trainierst du den kritischen Kern: Abbild erstellen und direkt Integritaet nachweisen.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>ftkimager.exe --create-image \\\\.\\PhysicalDrive1 E01 C:\\Cases\\case21\\images\\lab.E01
+Get-FileHash C:\\Cases\\case21\\images\\lab.E01</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">ftkimager.exe --create-image \\\\.\\PhysicalDrive1 E01 C:\\Cases\\case21\\images\\lab.E01</span></td></tr>
+      <tr><td>Nutzen</td><td>Verbindet Imaging und Hash-Nachweis in einem durchgehenden Ablauf.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">ftkimager.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Ein Imaging ohne anschliessenden Hash-Nachweis gilt in dieser Uebung als nicht bestanden.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>Acquisition started...
+SHA256 2BC4...</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Acquisition started...</span></td><td>Imaging wurde gestartet.</td></tr>
+      <tr><td><span class="inline-code">SHA256 2BC4...</span></td><td>Hashwert liegt vor und kann in der Fallakte dokumentiert werden.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Uebung 2: Imaging plus Hash</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>ftkimager.exe --create-image \\\\.\\physicaldrive1 e01 c:\\cases\\case21\\images\\lab.e01
+get-filehash c:\\cases\\case21\\images\\lab.e01</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre zuerst Imaging und dann Hash-Berechnung aus.</li>
+        <li>Notiere Dateiname des Images und den ausgegebenen Hashwert.</li>
+        <li>Entscheide: "integritaet nachgewiesen" oder "erneut sichern".</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">21.3</span> Uebung 3: Strings-Filter</h2>
+<p><strong>Was und warum:</strong> In dieser Uebung filterst du aus Rohdaten schnell die ersten verwertbaren Hinweise heraus.</p>
+
+<h3>Befehl ausfuehren</h3>
+<div class="code-block">
+  <div class="code-header">
+    <span class="lang">POWERSHELL</span>
+    <button class="copy-btn">Kopieren</button>
+  </div>
+  <pre><code>strings.exe C:\\Cases\\case21\\evidence\\memory.raw | findstr /i "password login token"</code></pre>
+</div>
+
+<h3>Befehl erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Bestandteil</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Befehl</td><td><span class="inline-code">strings.exe C:\\Cases\\case21\\evidence\\memory.raw | findstr /i "password login token"</span></td></tr>
+      <tr><td>Nutzen</td><td>Kombiniert Rohtext-Extraktion mit gezielter Stichwortsuche.</td></tr>
+      <tr><td>Kernkommando</td><td><span class="inline-code">strings.exe</span> ist simulator-kompatibel.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Treffer sind nur Hinweise. Die Bewertung erfolgt erst mit Kontext und Dokumentation.</p>
+</div>
+
+<div class="code-block output-block">
+  <div class="code-header"><span class="lang">ERWARTETE AUSGABE</span></div>
+  <pre><code>login=svc_case21
+password_hint=bluebox</code></pre>
+</div>
+
+<h3>Ausgabe erklaert</h3>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Ausgabe-Feld</th><th>Bedeutung</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">login=svc_case21</span></td><td>Hinweis auf moeglichen Accountbezug.</td></tr>
+      <tr><td><span class="inline-code">password_hint=bluebox</span></td><td>Potentiell sensibles Artefakt, das als Befund markiert werden sollte.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Uebung 3: Strings-Filter</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Den Schritt sicher ausfuehren und nachvollziehbar dokumentieren.</p>
+    </div>
+    <p><strong>Befehl fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>strings.exe c:\\cases\\case21\\evidence\\memory.raw | findstr /i "password login token"</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre den Befehl aus und markiere alle Trefferzeilen.</li>
+        <li>Ordne jeden Treffer als "relevant", "unklar" oder "nicht relevant" ein.</li>
+        <li>Dokumentiere mindestens einen Treffer mit kurzer Begruendung.</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Die Uebung ist bestanden, wenn Ausfuehrung, Ausgabe und kurze Interpretation sauber dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div><h2 class="section-title"><span class="number">21.4</span> Transfer und Abschluss</h2>
+<p>Du verbindest jetzt alle drei Kernschritte zu einem zusammenhaengenden Ablauf.</p>
+
+<div class="callout callout-info">
+  <div class="callout-header">&#9432; Merke</div>
+  <p>Das Kapitel gilt als bestanden, wenn du Start, Sicherung, Integritaetsnachweis und Hinweisanalyse konsistent dokumentierst.</p>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr><th>Schritt</th><th>Wofuer er da ist</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="inline-code">Start-Transcript -Path C:\\Cases\\case21\\notes\\exercise1.log</span></td><td>Pflichtreihenfolge sicher beherrschen.</td></tr>
+      <tr><td><span class="inline-code">ftkimager.exe --create-image \\\\.\\PhysicalDrive1 E01 C:\\Cases\\case21\\images\\lab.E01</span></td><td>Sicherung und Integritaet zusammen trainieren.</td></tr>
+      <tr><td><span class="inline-code">strings.exe C:\\Cases\\case21\\evidence\\memory.raw | findstr /i "password login token"</span></td><td>Treffer in Rohdaten schnell priorisieren.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout callout-danger">
+  <div class="callout-header">&#9888; Typische Fehler</div>
+  <ul>
+    <li><strong>Ohne Transcript gestartet:</strong> Nachweiskette ist lueckenhaft.</li>
+    <li><strong>Hash nicht notiert:</strong> Integritaetsnachweis fehlt im Bericht.</li>
+    <li><strong>Treffer ungeprueft uebernommen:</strong> Risiko falscher Schlussfolgerungen.</li>
+  </ul>
+</div>
+
+<div class="exercise-box">
+  <div class="exercise-header">
+    <span class="exercise-badge">Uebung</span>
+    <span class="exercise-name">Kapitel-Workflow komplett</span>
+  </div>
+  <div class="exercise-body">
+    <div class="exercise-goal">
+      <div class="goal-label">Ziel</div>
+      <p>Alle Kernschritte auf einer Slide sicher und ohne Zurueckspringen ausfuehren.</p>
+    </div>
+    <p><strong>Befehle fuer diese Uebung:</strong></p>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang">POWERSHELL</span>
+        <button class="copy-btn">Kopieren</button>
+      </div>
+      <pre><code>start-transcript -path c:\\cases\\case21\\notes\\exercise1.log
+get-disk
+get-partition -disknumber 1
+ftkimager.exe --create-image \\\\.\\physicaldrive1 e01 c:\\cases\\case21\\images\\lab.e01
+get-filehash c:\\cases\\case21\\images\\lab.e01
+strings.exe c:\\cases\\case21\\evidence\\memory.raw | findstr /i "password login token"</code></pre>
+    </div>
+    <div class="exercise-steps">
+      <ol class="numbered-list">
+        <li>Fuehre alle gezeigten Befehle in der angegebenen Reihenfolge aus.</li>
+        <li>Notiere pro Schritt die wichtigste Ausgabezeile.</li>
+        <li>Formuliere eine kurze Gesamtbewertung in 2-3 Saetzen.</li>
+        <li>Triff eine Abschlussentscheidung: "workflow bestanden" oder "wiederholen".</li>
+      </ol>
+    </div>
+    <div class="toggle-container">
+      <div class="toggle-header">
+        <span class="toggle-label">Loesung anzeigen</span>
+        <span class="toggle-arrow">&#9654;</span>
+      </div>
+      <div class="toggle-content">
+        <p>Der Abschluss ist erfolgreich, wenn Reihenfolge, Ausgaben und Bewertung nachvollziehbar dokumentiert sind.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn" data-target="ch21-uebungen">&#8592; Zur vorherigen Slide</button>
+  <button class="complete-section-btn">Kapitel abschliessen</button>
+</div>`;
 
 var ContentNav = {};
 
@@ -1100,4 +8786,29 @@ ContentNav["netzwerk-forensik"] = [
   { id: "ch14-firewall", label: "Firewall", icon: "&#128736;", section: "Infrastruktur" },
   { id: "ch15-wireshark", label: "Wireshark & Paketanalyse", icon: "&#128202;", section: "Analyse" },
   { id: "ch16-casestudy", label: "Fallstudie", icon: "&#9888;", section: "Abschluss" },
+];
+
+ContentNav["windows-forensik"] = [
+  { id: "welcome", label: "Willkommen", icon: "&#128421;", section: "Start" },
+  { id: "ch01-ablauf", label: "Forensischer Ablauf", icon: "&#128220;", section: "Trainingsmodul 1" },
+  { id: "ch02-grundbegriffe", label: "Device, Partition, Dateisystem", icon: "&#128194;", section: "Trainingsmodul 1" },
+  { id: "ch03-identifikation", label: "Datentraeger identifizieren", icon: "&#128269;", section: "Trainingsmodul 1" },
+  { id: "ch04-partitionstabellen", label: "Partitionstabellen verstehen", icon: "&#128451;", section: "Trainingsmodul 1" },
+  { id: "ch05-imaging", label: "Forensisches Imaging", icon: "&#128190;", section: "Trainingsmodul 1" },
+  { id: "ch06-image-formate", label: "Image-Formate", icon: "&#128230;", section: "Trainingsmodul 1" },
+  { id: "ch07-hashing", label: "Hashing und Integritaet", icon: "&#128273;", section: "Trainingsmodul 1" },
+  { id: "ch08-mounting", label: "Read-only Mounting", icon: "&#128279;", section: "Trainingsmodul 2" },
+  { id: "ch09-hex-binaer", label: "Hex- und Binaeranalyse", icon: "&#128187;", section: "Trainingsmodul 2" },
+  { id: "ch10-vergleich", label: "Datei- und Artefaktvergleich", icon: "&#128202;", section: "Trainingsmodul 2" },
+  { id: "ch11-strings-filter", label: "Strings, Pipes und Filter", icon: "&#128270;", section: "Trainingsmodul 2" },
+  { id: "ch12-dateisysteme", label: "Dateisysteme und Artefakte", icon: "&#128451;", section: "Trainingsmodul 2" },
+  { id: "ch13-sicher-loeschen", label: "Datentraeger sicher loeschen", icon: "&#128465;", section: "Trainingsmodul 2" },
+  { id: "ch14-write-blocker", label: "Write-Blocker und Schutzmassnahmen", icon: "&#128737;", section: "Trainingsmodul 2" },
+  { id: "ch15-protokollierung", label: "Protokollierung und Chain of Custody", icon: "&#128221;", section: "Trainingsmodul 2" },
+  { id: "ch16-best-practices", label: "Best Practices und typische Fehler", icon: "&#9989;", section: "Trainingsmodul 3" },
+  { id: "ch17-casestudy", label: "Case-Studie", icon: "&#128203;", section: "Trainingsmodul 3" },
+  { id: "ch18-kompakt-cheatsheet", label: "Kompaktes Befehls-Cheatsheet", icon: "&#128196;", section: "Trainingsmodul 3" },
+  { id: "ch19-quellen-standards", label: "Quellen und Standards", icon: "&#128214;", section: "Trainingsmodul 3" },
+  { id: "ch20-tool-installation", label: "Tool-Installation", icon: "&#9881;", section: "Trainingsmodul 3" },
+  { id: "ch21-uebungen", label: "Uebungen", icon: "&#127919;", section: "Trainingsmodul 3" },
 ];

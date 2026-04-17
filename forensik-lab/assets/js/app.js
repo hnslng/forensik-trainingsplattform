@@ -485,6 +485,9 @@ var App = (function () {
   function setActiveReference(labId) {
     if (labId === "netzwerk-forensik" && typeof ReferenceNetzwerk !== "undefined") {
       window.Reference = ReferenceNetzwerk;
+    } else if (labId === "windows-forensik" && typeof ReferenceForensik !== "undefined") {
+      // Windows-Forensik nutzt vorerst die allgemeine Forensik-Referenz.
+      window.Reference = ReferenceForensik;
     } else if (typeof ReferenceForensik !== "undefined") {
       window.Reference = ReferenceForensik;
     }
@@ -726,6 +729,7 @@ var App = (function () {
       if (!panelTerminal) {
         panelTerminal = new InteractiveTerminal("terminal-container");
         panelTerminal.init();
+        initTerminalWithEnv();
       }
       if (!activeSlide.querySelector(".exercise-complete-marker")) {
         if (nextBtn) {
