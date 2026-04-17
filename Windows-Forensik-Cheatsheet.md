@@ -921,56 +921,317 @@ strings.exe C:\Cases\case01\images\disk01.img | findstr /I "password pdf"
 
 | Dateisystem | Typische Plattform | Vorteile | Nachteile/Risiken | Forensische Hinweise |
 |---|---|---|---|---|
-| **NTFS** | Windows | ACL/Permissions, ADS, Journaling | ADS kann Artefakte „verstecken" | MFT/USN-Journal, $LogFile und ADS berücksichtigen |
-| **ReFS** | Windows Server, Storage Spaces | Checksums, große Volumes | weniger Tool-Support | integrity streams, Metadaten-Scrubbing |
-| **exFAT** | Wechselmedien | große Dateien, hohe Kompatibilität | weniger Metadaten | Timestamp-Verhalten prüfen |
-| **FAT32** | Wechselmedien/Legacy | maximale Kompatibilität | 4-GB-Dateigrößenlimit | wenig Journaling-Artefakte |
+| **NTFS** | Windows | ACL/Permissions, ADS, Journaling | viele Metadaten-„Verstecke" (ADS, Slack) | siehe 12.2 – eigener Abschnitt |
+| **ReFS** | Windows Server, Storage Spaces | Checksums, große Volumes | weniger Tool-Support | Integrity Streams, Metadaten-Scrubbing |
+| **exFAT** | Wechselmedien | große Dateien, hohe Kompatibilität | wenige Metadaten, kein Journal | Timestamp-Verhalten und FAT-Chain prüfen |
+| **FAT32** | Wechselmedien/Legacy | maximale Kompatibilität | 4-GB-Dateigrößenlimit | wenig Journaling-Artefakte, einfache Recovery |
 | ext4 | Linux | Journaling, stabile Performance | Linux-spezifische Strukturen | Journal/Superblock/Extent-Struktur relevant |
 | APFS | macOS | Snapshots, Verschlüsselung | macOS-spezifisch | Container/Volumes; Encryption prüfen |
 | HFS+ | ältere macOS | Legacy | veraltet | Journal/Metadaten beachten |
 
-## 12.2 NTFS-spezifische Artefakte
+## 12.2 NTFS – Aufbau und forensisch relevante Strukturen
 
-| Artefakt | Pfad / Ort | Forensische Relevanz |
+NTFS verwaltet sich selbst als Dateisystem aus Dateien: jede Struktur – Dateitabelle, Journal, Bitmap, Security Descriptors – ist selbst eine Datei mit einem Namen, der mit `$` beginnt. Im laufenden Windows sind diese Dateien unsichtbar; aus einem forensischen Image lassen sie sich gezielt extrahieren und auswerten.
+
+### 12.2.1 NTFS-Metadatendateien (Systemdateien)
+
+Die Systemdateien belegen in jeder NTFS-Partition fixe Positionen in der MFT (Inodes 0–15, einige weitere unter `$Extend\`).
+
+| Datei | Inode | Funktion | Forensische Relevanz |
+|---|---|---|---|
+| `$MFT` | 0 | Master File Table, je 1024 Byte pro Datei/Verzeichnis | **Zentrales Artefakt:** jede (auch gelöschte) Datei mit Name, Größe, Pfad, Timestamps |
+| `$MFTMirr` | 1 | Spiegel der ersten vier MFT-Records | Fallback bei korrupter `$MFT` |
+| `$LogFile` | 2 | NTFS-Transaktionsjournal | Frischeste Datei-Operationen, auch zurückgerollte |
+| `$Volume` | 3 | Volume-Name, Seriennummer, NTFS-Version | Volume-Serial für LNK/JumpList-Korrelation |
+| `$AttrDef` | 4 | Attributsdefinitionen | gering |
+| `.` (Root) | 5 | Wurzelverzeichnis | Index-Einträge (`$I30`) |
+| `$Bitmap` | 6 | Cluster-Allokations-Bitmap | Freie vs. belegte Cluster, Slack |
+| `$Boot` | 7 | Bootsektor + Bootcode (VBR) | BPB: Sektorgröße, MFT-Offset, Cluster-Größe |
+| `$BadClus` | 8 | Liste defekter Cluster | gelegentlich Datenversteck |
+| `$Secure` (`$SDS`) | 9 | Security Descriptors (ACL) | Besitzer, Berechtigungen historisch |
+| `$UpCase` | 10 | Upper-Case-Tabelle | gering |
+| `$Extend\` | 11 | Container weiterer Systemdateien | siehe folgende Zeilen |
+| `$Extend\$ObjId` | – | Object IDs (für LNK-Tracking) | Cross-System-Korrelation |
+| `$Extend\$Quota` | – | Disk Quotas | User-Zuordnung |
+| `$Extend\$Reparse` | – | Reparse Points, Junctions, OneDrive-Placeholders | Verzeichnisumleitungen |
+| `$Extend\$UsnJrnl` | – | USN Change Journal (`$Max`, `$J`) | **Sehr relevant:** Wochen an Datei-Änderungen |
+
+### 12.2.2 Der Master File Table (`$MFT`) im Detail
+
+Pro Datei **und** pro Verzeichnis existiert ein MFT-Record von 1024 Byte. Gelöschte Dateien bleiben in der MFT stehen, bis ihr Record von einer neuen Datei überschrieben wird – das kann Stunden bis Monate dauern.
+
+**Struktur eines MFT-Records:**
+
+- Header: Signatur `FILE`, Flags (In-Use, Directory), Sequence Number, Hard-Link-Count
+- Attribute (TLV-Liste) – die wichtigsten:
+  - `$STANDARD_INFORMATION` (`$SI`, Typ 0x10): 4 Zeitstempel, Datei-Attribute
+  - `$FILE_NAME` (`$FN`, Typ 0x30): Dateiname, Parent-Referenz, nochmal 4 Zeitstempel
+  - `$DATA` (Typ 0x80): Dateiinhalt – **resident** (für Dateien kleiner als ~700 Byte direkt in der MFT) oder **non-resident** (über Data Runs)
+  - `$INDEX_ROOT` / `$INDEX_ALLOCATION` (Typ 0x90/0xA0): bei Verzeichnissen – Kind-Einträge (`$I30`)
+  - `$ATTRIBUTE_LIST` (Typ 0x20): bei stark fragmentierten/großen Dateien
+
+**Was sich aus der `$MFT` gewinnen lässt:**
+
+- Alle Dateinamen – auch gelöschte, solange Record nicht wiederverwendet
+- Parent-Verzeichnis-Referenz (kompletter Pfad rekonstruierbar)
+- Dateigrößen (logisch + physisch)
+- **Inhalt kleiner Dateien direkt aus der MFT** (resident `$DATA`)
+- Achterzeitstempel-Set (siehe 12.2.3)
+- Alle Alternate Data Streams (jeder ADS ist ein eigenes `$DATA`-Attribut)
+
+**`$MFT` aus Image extrahieren:**
+
+```powershell
+# Sleuth Kit: Inode 0 = MFT selbst. -o erwartet Startsektor der NTFS-Partition.
+& "C:\Tools\sleuthkit\bin\mmls.exe" "D:\Cases\case01\images\disk01.E01"
+# -> Startsektor notieren, z.B. 2048
+
+& "C:\Tools\sleuthkit\bin\icat.exe" -o 2048 `
+    "D:\Cases\case01\images\disk01.E01" 0 `
+    > "D:\Cases\case01\notes\MFT.bin"
+```
+
+Alternative in FTK Imager (GUI): Evidence Tree → Partition → `[root]` → Rechtsklick auf `$MFT` → **Export Files…**
+
+**`$MFT` parsen mit MFTECmd (Eric Zimmerman):**
+
+```powershell
+& "C:\Tools\EZ\MFTECmd.exe" -f "D:\Cases\case01\notes\MFT.bin" `
+    --csv "D:\Cases\case01\notes" --csvf MFT.csv
+# Bodyfile für Timeline (mactime-Format)
+& "C:\Tools\EZ\MFTECmd.exe" -f "D:\Cases\case01\notes\MFT.bin" `
+    --body "D:\Cases\case01\notes\MFT.body" --bodyf body
+```
+
+Die CSV enthält pro Datei u. a.: vollständigen Pfad, Größe, alle acht Timestamps (0x10 **und** 0x30), Flags, Extension, Parent-Referenz, Residency.
+
+### 12.2.3 NTFS-Zeitstempel: `$SI` vs. `$FN` – Timestomping erkennen
+
+NTFS führt pro Datei **acht** Zeitstempel:
+
+| Set | Attribut | Felder |
 |---|---|---|
-| `$MFT` | Volume-Root | Master File Table – zentrale Datei-Metadaten |
-| `$LogFile` | Volume-Root | Journal, Rollback-Informationen |
-| `$UsnJrnl:$J` | Volume-Root (ADS) | Change Journal – Änderungen an Dateien |
-| Alternate Data Streams | `datei.txt:stream` | Können versteckte Inhalte enthalten |
-| `$Recycle.Bin\<SID>` | Volume-Root | Papierkorb pro User |
-| `System Volume Information\` | Volume-Root | Volume Shadow Copies, Restore Points |
+| `$SI` (Typ 0x10) | `$STANDARD_INFORMATION` | Created, Modified, MFT-Changed, Accessed |
+| `$FN` (Typ 0x30) | `$FILE_NAME` | Created, Modified, MFT-Changed, Accessed |
 
-ADS an einer Datei auflisten:
+- **`$SI`**-Timestamps sind über die normale Win32-API (`SetFileTime`) schreibbar. Malware setzt sie gerne zurück, um unauffällig zu wirken ("Timestomping").
+- **`$FN`**-Timestamps werden ausschließlich durch den NTFS-Kernel bei Create/Rename/Move/Hardlink gesetzt und sind aus dem Userland nicht trivial manipulierbar.
+
+**Typische Indikatoren für Timestomping:**
+
+- `$SI-Modified` **vor** `$FN-Created` (die Datei wurde angeblich geändert, bevor sie angelegt wurde)
+- `$SI`-Werte exakt auf die Sekunde gerundet (0 Nanosekunden Sub-Second-Anteil), während `$FN` volle 100-ns-Auflösung zeigt
+- `$SI`-Timestamps „zu rund" (z. B. `2019-01-01 00:00:00`)
+- Große Spreizung zwischen `$SI` und `$FN` bei Dateien, die nie umbenannt/verschoben wurden
+
+In der MFTECmd-CSV stehen die `$SI`-Zeitstempel in Spalten mit Suffix `0x10`, die `$FN`-Zeitstempel mit Suffix `0x30` (z. B. `Created0x10` vs. `Created0x30`).
+
+**Schnell-Filter in PowerShell:**
 
 ```powershell
-Get-Item .\datei.txt -Stream *
+Import-Csv "D:\Cases\case01\notes\MFT.csv" |
+    Where-Object {
+        $si = [datetime]$_.'Created0x10'; $fn = [datetime]$_.'Created0x30'
+        $si -ne $fn -and $_.IsDirectory -eq 'False'
+    } |
+    Select-Object FullPath, Created0x10, Created0x30, LastModified0x10, LastModified0x30 |
+    Export-Csv -NoTypeInformation "D:\Cases\case01\notes\timestomp_candidates.csv"
 ```
 
-Inhalt eines ADS lesen:
+### 12.2.4 `$LogFile` – NTFS-Transaktionsjournal
+
+`$LogFile` ist ein zirkuläres Journal (Default meist 64 MiB), in das NTFS jede Metadaten-Änderung **vor** der Ausführung schreibt (Write-Ahead Logging). Forensischer Nutzen: Dateisystem-Operationen der letzten Stunden bis wenigen Tage lassen sich rekonstruieren – auch solche, deren Spuren in der `$MFT` bereits überschrieben wurden.
+
+**Was darin steht:**
+
+- Redo/Undo-Records pro Transaktion
+- Betroffene MFT-Records und geänderte Attribute
+- Partielle alte Werte vor der Änderung
+
+**`$LogFile` extrahieren:**
 
 ```powershell
-Get-Content .\datei.txt -Stream hidden
+& "C:\Tools\sleuthkit\bin\icat.exe" -o 2048 `
+    "D:\Cases\case01\images\disk01.E01" 2 `
+    > "D:\Cases\case01\notes\LogFile.bin"
 ```
 
-## 12.3 Volume Shadow Copies (VSS) auflisten
+**Parsen:**
+
+- **LogFileParser** (Joakim Schicht): `LogFileParser.exe -i LogFile.bin -o LogFile.csv`
+- **NTFS Log Tracker** (Junghoon Oh) – GUI, kombiniert `$LogFile` + `$UsnJrnl` + `$MFT`
+
+**Zeitliche Abdeckung:** stark lastabhängig – bei typischen Arbeitsplätzen einige Stunden bis ca. zwei Tage. Bei idle-Systemen deutlich mehr.
+
+### 12.2.5 `$UsnJrnl` – USN Change Journal
+
+Unter `$Extend\$UsnJrnl` führt NTFS ein zweites, langlebigeres Journal. Es besteht aus zwei ADS:
+
+- `$Max`: Header und Konfiguration (Größe, Inhaltsgrenzen)
+- `$J`: eigentliche Änderungs-Records – nominell oft mehrere hundert MiB, real viel kleiner, weil sparse
+
+Pro Änderung ein Record mit Zeitstempel, Dateinamen, Parent-Referenz und **Reason-Flags** (kombinierbar):
+
+| Reason | Bedeutung |
+|---|---|
+| `FILE_CREATE` | Datei angelegt |
+| `FILE_DELETE` | Datei gelöscht |
+| `DATA_OVERWRITE` | Inhalt überschrieben |
+| `DATA_EXTEND` / `DATA_TRUNCATION` | Größe geändert |
+| `RENAME_OLD_NAME` / `RENAME_NEW_NAME` | Umbenennung (zwei Records) |
+| `BASIC_INFO_CHANGE` | Timestamps/Attribute geändert |
+| `SECURITY_CHANGE` | ACL geändert |
+| `STREAM_CHANGE` | ADS angelegt/geändert |
+| `CLOSE` | Abschluss einer Operation – markiert das „Ende" der Reason-Kette |
+
+**Zeitliche Abdeckung:** meist mehrere Wochen, auf Servern Monate – damit deutlich länger als `$LogFile`.
+
+**Extrahieren (FTK Imager GUI, empfohlen):**
+
+Evidence Tree → Partition → `[root]` → `$Extend` → `$UsnJrnl` → Rechtsklick → **Export Files…** Es werden die beiden Streams `$Max` und `$J` separat als Dateien gespeichert (achten auf `$J` – das ist der relevante).
+
+**Parsen:**
+
+```powershell
+# MFTECmd kann $J direkt parsen
+& "C:\Tools\EZ\MFTECmd.exe" -f "D:\Cases\case01\notes\UsnJrnl_J.bin" `
+    --csv "D:\Cases\case01\notes" --csvf usnjrnl.csv
+```
+
+Alternativ: **UsnJrnl2Csv** (Joakim Schicht).
+
+### 12.2.6 Alternate Data Streams (ADS)
+
+NTFS erlaubt pro Datei beliebig viele benannte Datenströme. Der „normale" Inhalt liegt im unbenannten `$DATA` (`datei.txt::$DATA`); zusätzliche Ströme hängen sich per Doppelpunkt an: `datei.txt:versteckt`.
+
+**Häufige legitime ADS:**
+
+| Stream | Quelle | Inhalt |
+|---|---|---|
+| `Zone.Identifier` | Downloads, E-Mail-Anhänge, kopiert von Netzshares | „Mark of the Web" – Zone + Quell-URL |
+| `SmartScreen` | Windows SmartScreen | Scan-Status |
+| `OECustomProperty` | Outlook | Mail-Eigenschaften |
+| `favicon` | Browser | Icon-Daten |
+
+**Forensische Relevanz:** Malware nutzt ADS zum Verstecken von Payloads, Konfigurationen oder Second-Stage-Binaries. `Zone.Identifier` ist umgekehrt ein starker Herkunftsnachweis.
+
+**ADS auf gemountetem Image auflisten und lesen:**
+
+```powershell
+# Alle ADS im gemounteten Image (M:) sammeln
+Get-ChildItem M:\ -Recurse -Force -ErrorAction SilentlyContinue |
+    ForEach-Object { Get-Item $_.FullName -Stream * -ErrorAction SilentlyContinue } |
+    Where-Object { $_.Stream -ne ':$DATA' } |
+    Select-Object FileName, Stream, Length |
+    Export-Csv -NoTypeInformation "D:\Cases\case01\notes\ads_all.csv"
+
+# Zone.Identifier gezielt auslesen
+Get-Content 'M:\Users\alice\Downloads\setup.exe' -Stream 'Zone.Identifier'
+```
+
+Typischer `Zone.Identifier`-Inhalt:
+
+```
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://example.com/
+HostUrl=https://example.com/downloads/setup.exe
+```
+
+Zone-IDs: `0` = Local Machine, `1` = Local Intranet, `2` = Trusted, `3` = Internet, `4` = Restricted.
+
+### 12.2.7 `$I30` – Verzeichnisindex und Index-Slack
+
+Verzeichnisse speichern ihre Einträge als B+-Baum im `$INDEX_ROOT`/`$INDEX_ALLOCATION`-Attribut mit Indexnamen `$I30`. Die Indexeinträge enthalten kompakte Kopien der `$FN`-Attribute der Kind-Dateien (Name, Parent-Ref, Größe, 4× Timestamps).
+
+**Forensischer Gewinn – Index-Slack:** Wird eine Datei gelöscht und ihr MFT-Record später wiederverwendet, bleiben ihre Spuren oft **in den Slack-Bereichen** des `$I30`-Baums erhalten. Dort lassen sich Dateinamen teils über Monate rekonstruieren, nachdem die MFT-Spur bereits weg ist.
+
+**Tools:** `INDXParse.py` (Willi Ballenthin), `INDXRipper`.
+
+### 12.2.8 Recycle Bin (`$Recycle.Bin`)
+
+Seit Vista liegt der Papierkorb unter `$Recycle.Bin\<SID>\`. Jede gelöschte Datei erzeugt zwei Einträge:
+
+- `$I<ID>` (z. B. `$IABC123`): Metadaten – ursprünglicher Pfad, Originalgröße, Löschzeitstempel
+- `$R<ID>` (z. B. `$RABC123`): der eigentliche Dateiinhalt
+
+Die **SID** im Pfad identifiziert den Benutzer, der gelöscht hat.
+
+**Parsen mit RBCmd (Eric Zimmerman):**
+
+```powershell
+& "C:\Tools\EZ\RBCmd.exe" -d 'M:\$Recycle.Bin' `
+    --csv "D:\Cases\case01\notes" --csvf recyclebin.csv
+```
+
+SID → Username auflösen über die Registry (`SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\<SID>`).
+
+### 12.2.9 Metadaten aus dem Image extrahieren – Übersicht
+
+Typischer Ablauf nach Read-only-Mount des Images bzw. direkt aus den NTFS-Inodes:
+
+| Artefakt | Quelle (Inode / Pfad) | Extraktion | Parser |
+|---|---|---|---|
+| `$MFT` | Inode 0 | `icat -o <sec> img 0` / FTK Imager Export | **MFTECmd** |
+| `$LogFile` | Inode 2 | `icat -o <sec> img 2` | **LogFileParser**, NTFS Log Tracker |
+| `$UsnJrnl:$J` | `$Extend\$UsnJrnl:$J` | FTK Imager Export (GUI einfacher) | **MFTECmd**, UsnJrnl2Csv |
+| `$I30` eines Verzeichnisses | MFT-Record des Verzeichnisses | FTK Imager Export | **INDXParse**, INDXRipper |
+| `$Recycle.Bin\<SID>\$I*` | reguläre Dateien | direkt vom gemounteten Image | **RBCmd** |
+| ADS (z. B. `Zone.Identifier`) | beliebige Datei | `Get-Content -Stream` am gemounteten Image | textuell |
+| `$Secure:$SDS` (ACLs) | Inode 9 | FTK Imager Export | `secure_sds.py`, X-Ways |
+
+**Partitionsoffset für `icat -o` ermitteln:**
+
+```powershell
+& "C:\Tools\sleuthkit\bin\mmls.exe" "D:\Cases\case01\images\disk01.E01"
+# Startsektor der NTFS-Partition notieren (z.B. 2048)
+```
+
+**Kombinierte Timeline aus mehreren NTFS-Quellen:**
+
+```powershell
+# $MFT und $UsnJrnl:$J jeweils als Bodyfile (mactime-Format)
+& "C:\Tools\EZ\MFTECmd.exe" -f "D:\Cases\case01\notes\MFT.bin" `
+    --body "D:\Cases\case01\notes\MFT.body"     --bodyf mft
+& "C:\Tools\EZ\MFTECmd.exe" -f "D:\Cases\case01\notes\UsnJrnl_J.bin" `
+    --body "D:\Cases\case01\notes\usn.body" --bodyf usn
+
+# Zusammenführen und per mactime sortieren
+Get-Content "D:\Cases\case01\notes\MFT.body","D:\Cases\case01\notes\usn.body" |
+    Set-Content "D:\Cases\case01\notes\combined.body"
+& "C:\Tools\sleuthkit\bin\mactime.exe" -b "D:\Cases\case01\notes\combined.body" -d `
+    > "D:\Cases\case01\notes\timeline.csv"
+```
+
+## 12.3 Volume Shadow Copies (VSS)
 
 **Beschreibung:**
 
-Windows erstellt automatisch Schattenkopien, die frühere Zustände von Dateien und Registry-Hives enthalten. Forensisch extrem wertvoll.
+Windows erstellt über den Volume Shadow Copy Service automatisch Schattenkopien, die frühere Zustände von Dateien und Registry-Hives enthalten. Forensisch extrem wertvoll – insbesondere, wenn Dateien nach dem Vorfall modifiziert oder gelöscht wurden, aber in einer älteren Shadow Copy noch erhalten sind.
 
-**Befehl (Administrator):**
+**Live-Triage (am laufenden System, Administrator):**
 
 ```cmd
 vssadmin list shadows
 ```
 
-Einbinden einer Shadow Copy über symbolischen Link (am laufenden System – nicht forensisch sauber, nur im Live-Triage-Kontext):
+Einbinden per symbolischem Link (nur Triage, nicht forensisch sauber):
 
 ```cmd
 mklink /D C:\shadow_copy "\\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy1\"
 ```
 
-Für forensische Analyse besser: Shadow Copies aus dem gemounteten Image mit `vss_carver`, `libvshadow-utils` oder über Arsenal Image Mounter („Mount Shadows") extrahieren.
+**Forensisch sauber – aus dem Image:**
+
+- Arsenal Image Mounter bindet Shadow Copies des eingebundenen Images direkt mit ein (Option „Mount all with shadow copies")
+- `libvshadow` / `vshadowinfo.exe`, `vshadowmount.exe` aus dem libyal-Projekt auflistet und mountet einzelne Shadows aus einem raw/E01-Image
+- `vss_carver.py` carved VSS-Strukturen auch aus unallokiertem Bereich
+
+```powershell
+& "C:\Tools\libvshadow\vshadowinfo.exe" "D:\Cases\case01\images\disk01.img"
+& "C:\Tools\libvshadow\vshadowmount.exe" "D:\Cases\case01\images\disk01.img" "D:\Cases\case01\mounts\vss"
+# In D:\Cases\case01\mounts\vss\ erscheinen vss1, vss2, ... als raw-Images pro Shadow
+```
 
 ## 12.4 Partitionstabelle anlegen (GPT) – nur Übungs-/Zielmedium
 
