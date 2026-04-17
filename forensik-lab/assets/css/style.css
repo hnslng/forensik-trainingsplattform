@@ -1260,7 +1260,8 @@ td {
   min-width: 60px;
 }
 
-.t-text-mirror {
+.t-text-before,
+.t-text-after {
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 14px;
@@ -1268,17 +1269,24 @@ td {
   pointer-events: none;
 }
 
-.t-input-field:not(:focus-within) .t-text-mirror:empty::after {
+.t-input-field:not(:focus-within):not(.has-input) .t-text-before:empty::after {
   content: 'Befehl eingeben...';
   color: var(--text-muted);
   opacity: 0.4;
 }
 
 .t-block-cursor {
-  display: inline-block;
-  width: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8px;
   height: 17px;
   background: var(--accent);
+  color: var(--bg-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1;
+  white-space: pre;
   flex-shrink: 0;
   pointer-events: none;
   margin-left: 1px;
@@ -1286,7 +1294,7 @@ td {
 }
 
 .t-input-field:focus-within .t-block-cursor {
-  animation: blockBlink 1s step-end infinite;
+  animation: blockBlink 1.4s step-end infinite;
 }
 
 .t-input-field:not(:focus-within) .t-block-cursor {
@@ -1312,8 +1320,14 @@ td {
 }
 
 @keyframes blockBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%, 100% {
+    background: var(--accent);
+    color: var(--bg-primary);
+  }
+  50% {
+    background: transparent;
+    color: var(--text-primary);
+  }
 }
 
 .inline-terminal {

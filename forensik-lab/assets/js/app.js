@@ -6,6 +6,10 @@ var App = (function () {
   var currentSlide = 0;
   var totalSlides = 0;
   var slides = [];
+  var fadeRafId = null;
+  var fadeFollowRafId = null;
+  var fadeResizeObserver = null;
+  var fadeMutationObserver = null;
 
   function initTerminalWithEnv() {
     if (!panelTerminal) return;
@@ -57,8 +61,32 @@ var App = (function () {
     if (typeof Cheatsheet !== "undefined" && Cheatsheet.render) Cheatsheet.render();
     handleRoute();
     window.addEventListener("hashchange", handleRoute);
+    window.addEventListener("resize", updateScrollFade);
     var mc = document.getElementById("main-content");
     if (mc) mc.addEventListener("scroll", updateScrollFade);
+    initScrollFadeObservers();
+    updateScrollFade();
+  }
+
+  function initScrollFadeObservers() {
+    var mc = document.getElementById("main-content");
+    var content = document.getElementById("content");
+    var terminal = document.getElementById("terminal-bottom");
+    if (!mc || !content) return;
+    if (typeof ResizeObserver !== "undefined" && !fadeResizeObserver) {
+      fadeResizeObserver = new ResizeObserver(function () {
+        updateScrollFade();
+      });
+      fadeResizeObserver.observe(mc);
+      fadeResizeObserver.observe(content);
+      if (terminal) fadeResizeObserver.observe(terminal);
+    }
+    if (typeof MutationObserver !== "undefined" && !fadeMutationObserver) {
+      fadeMutationObserver = new MutationObserver(function () {
+        updateScrollFade();
+      });
+      fadeMutationObserver.observe(content, { childList: true, subtree: true });
+    }
   }
 
   function parseHash() {
@@ -376,7 +404,7 @@ var App = (function () {
         initTerminalWithEnv();
       }
     }
-    setTimeout(updateScrollFade, 350);
+    syncScrollFadeDuringTerminalTransition();
   }
 
   function hideTerminal() {
@@ -417,6 +445,7 @@ var App = (function () {
     if (!termEl) return;
     if (!termEl.classList.contains("open")) {
       termEl.classList.add("open");
+      syncScrollFadeDuringTerminalTransition();
     }
     if (!panelTerminal) {
       panelTerminal = new InteractiveTerminal("terminal-container");
@@ -428,6 +457,29 @@ var App = (function () {
       if (panelTerminal.updateMirror) panelTerminal.updateMirror();
       panelTerminal.inputEl.focus();
     }
+  }
+
+  function syncScrollFadeDuringTerminalTransition() {
+    var termEl = document.getElementById("terminal-bottom");
+    if (!termEl) { updateScrollFade(); return; }
+    if (fadeFollowRafId !== null) {
+      var cafPrev = window.cancelAnimationFrame || window.clearTimeout;
+      cafPrev(fadeFollowRafId);
+      fadeFollowRafId = null;
+    }
+    var raf = window.requestAnimationFrame || function (cb) { return window.setTimeout(cb, 16); };
+    var startMs = Date.now();
+    function tick() {
+      updateScrollFade();
+      var stillAnimating = (Date.now() - startMs) < 420;
+      if (stillAnimating) {
+        fadeFollowRafId = raf(tick);
+      } else {
+        fadeFollowRafId = null;
+        updateScrollFade();
+      }
+    }
+    tick();
   }
 
   function setActiveReference(labId) {
@@ -648,16 +700,28 @@ var App = (function () {
     setTimeout(updateScrollFade, 100);
   }
 
+  function isExerciseContext(scope) {
+    if (!scope) return false;
+    if (scope.querySelector(".exercise-box") || scope.querySelector(".exercise-start-banner")) return true;
+    var sectionTitle = scope.querySelector(".section-title");
+    if (!sectionTitle) return false;
+    var titleText = (sectionTitle.textContent || "").toLowerCase();
+    return titleText.indexOf("uebung:") !== -1 ||
+      titleText.indexOf("\u00fcbung:") !== -1 ||
+      titleText.indexOf("vorbereitung:") !== -1 ||
+      titleText.indexOf("exercise") !== -1;
+  }
+
   function handleExerciseSlide() {
     var activeSlide = document.querySelector(".slide.active");
     if (!activeSlide) return;
-    var hasEx = activeSlide.getAttribute("data-has-exercise") === "true";
+    var hasEx = activeSlide.getAttribute("data-has-exercise") === "true" || isExerciseContext(activeSlide);
     var nextBtn = document.querySelector(".slide-next");
     if (hasEx && activeSlide.querySelector(".exercise-box")) {
       var termEl = document.getElementById("terminal-bottom");
       if (termEl && !termEl.classList.contains("open")) {
         termEl.classList.add("open");
-        setTimeout(updateScrollFade, 350);
+        syncScrollFadeDuringTerminalTransition();
       }
       if (!panelTerminal) {
         panelTerminal = new InteractiveTerminal("terminal-container");
@@ -727,13 +791,11 @@ var App = (function () {
   function autoOpenTerminalOnExercise() {
     var activeSlide = document.querySelector(".slide.active");
     if (!activeSlide) return;
-    var sectionTitle = activeSlide.querySelector(".section-title");
-    if (!sectionTitle) return;
-    var titleText = sectionTitle.textContent || "";
-    if (titleText.indexOf("\u00dcbung:") !== -1 || titleText.toLowerCase().indexOf("exercise") !== -1) {
+    if (isExerciseContext(activeSlide)) {
       var termEl = document.getElementById("terminal-bottom");
       if (termEl && !termEl.classList.contains("open")) {
         termEl.classList.add("open");
+        syncScrollFadeDuringTerminalTransition();
       }
       if (!panelTerminal) {
         panelTerminal = new InteractiveTerminal("terminal-container");
@@ -743,7 +805,6 @@ var App = (function () {
       if (panelTerminal.inputEl) {
         panelTerminal.inputEl.focus();
       }
-      setTimeout(updateScrollFade, 350);
     }
   }
 
@@ -771,11 +832,7 @@ var App = (function () {
   function injectTryButtons() {
     var scope = document.querySelector(".slide.active") || document.getElementById("content");
     if (!scope) return;
-    var isExercise = false;
-    var titleEl = scope.querySelector(".section-title");
-    if (titleEl && (titleEl.textContent.indexOf("\u00dcbung:") !== -1 || titleEl.textContent.indexOf("Vorbereitung:") !== -1)) {
-      isExercise = true;
-    }
+    var isExercise = isExerciseContext(scope);
     if (!isExercise && !scope.querySelector(".exercise-box")) return;
     var blocks = scope.querySelectorAll(".code-block:not(.output-block)");
     for (var i = 0; i < blocks.length; i++) {
@@ -858,6 +915,8 @@ var App = (function () {
 
   function handleToggle() {
     this.closest(".toggle-container").classList.toggle("open");
+    updateScrollFade();
+    setTimeout(updateScrollFade, 80);
   }
 
   function handleDecision() {
@@ -914,6 +973,15 @@ var App = (function () {
   }
 
   function updateScrollFade() {
+    if (fadeRafId !== null) return;
+    var raf = window.requestAnimationFrame || function (cb) { return window.setTimeout(cb, 16); };
+    fadeRafId = raf(function () {
+      fadeRafId = null;
+      applyScrollFade();
+    });
+  }
+
+  function applyScrollFade() {
     var mc = document.getElementById("main-content");
     var fade = document.getElementById("scroll-fade");
     var termEl = document.getElementById("terminal-bottom");
@@ -923,8 +991,9 @@ var App = (function () {
     } else {
       fade.style.bottom = "0px";
     }
-    var atBottom = mc.scrollHeight - mc.scrollTop - mc.clientHeight < 40;
-    var hasOverflow = mc.scrollHeight > mc.clientHeight + 40;
+    var maxScroll = Math.max(0, mc.scrollHeight - mc.clientHeight);
+    var hasOverflow = maxScroll > 16;
+    var atBottom = maxScroll - mc.scrollTop <= 12;
     if (hasOverflow && !atBottom) {
       fade.classList.add("visible");
     } else {

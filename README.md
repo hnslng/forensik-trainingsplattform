@@ -131,6 +131,10 @@ python3 build_content.py
 2. `python3 build_content.py` ausfuhren
 3. Seite im Browser neu laden
 
+### Slide-Authoring
+
+- Anleitung fur neue Slides im bestehenden Design: `docs/slide-authoring-guide.md`
+
 ## Neues Lab hinzufugen
 
 1. Neues Verzeichnis anlegen: `content/<lab-id>/`

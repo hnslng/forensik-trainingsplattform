@@ -1,17 +1,13 @@
 <h2 class="section-title"><span class="number">8.3</span> DHCP-Informationen anzeigen und statische IP setzen</h2><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code># Aktuelle IP und Interface-Infos anzeigen
 ip addr show eth0
 
-# DHCP-Lease erneuern (IP abgeben und neu holen)
-sudo dhclient -r eth0      # Aktuelle IP abgeben (Release)
-sudo dhclient eth0          # Neue IP anfordern (Discover)
-
 # DNS-Konfiguration anzeigen
 cat /etc/resolv.conf
 
 # Statische Host-Aufl&ouml;sung anzeigen
 cat /etc/hosts</code></pre></div><p>Manchmal braucht ein Ger&auml;t eine feste IP (z.B. Server, Drucker). Dann deaktivierst du DHCP und setzt die IP manuell.</p><p><strong>Tempor&auml;r</strong> (bis zum Neustart):</p><div class="code-block"><div class="code-header"><span class="lang">BASH</span><button class="copy-btn">Kopieren</button></div><pre><code>sudo ip addr add 192.168.1.100/24 dev eth0
-sudo ip link set eth0 up
-sudo ip route add default via 192.168.1.1</code></pre></div><p><strong>Dauerhaft</strong> (Netplan unter Ubuntu) &ndash; Datei <span class="inline-code">/etc/netplan/01-static.yaml</span>:</p><div class="code-block"><div class="code-header"><span class="lang">YAML</span></div><pre><code>network:
+ip route show
+ip neigh show</code></pre></div><p>Manchmal braucht ein Ger&auml;t eine feste IP (z.B. Server, Drucker). Dann deaktivierst du DHCP und setzt die IP manuell.</p><p><strong>Hinweis:</strong> Aktionen wie <span class="inline-code">dhclient</span>, <span class="inline-code">ip addr add</span> oder <span class="inline-code">ip route add</span> sind reale Linux-Admin-Befehle, aber nicht Teil des simulierten Befehlsumfangs.</p><p><strong>Dauerhaft</strong> (Netplan unter Ubuntu) &ndash; Datei <span class="inline-code">/etc/netplan/01-static.yaml</span>:</p><div class="code-block"><div class="code-header"><span class="lang">YAML</span></div><pre><code>network:
   version: 2
   ethernets:
     eth0:

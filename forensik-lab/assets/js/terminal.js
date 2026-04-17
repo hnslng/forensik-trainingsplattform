@@ -1298,6 +1298,27 @@ var TerminalCommands = {
 			}
 			return [{ text: output.trimEnd(), type: null }];
 		}
+		if (sub === 'link' || sub === 'l') {
+			var target = null;
+			for (var li = 1; li < args.length; li++) {
+				if (args[li] !== 'show' && args[li].charAt(0) !== '-') { target = args[li]; break; }
+			}
+			var linkOut = '';
+			var linkIdx = 1;
+			for (var ifName in net.interfaces) {
+				if (target && ifName !== target) continue;
+				var ifData = net.interfaces[ifName];
+				var flags = ifName === 'lo' ? 'LOOPBACK,UP' : 'BROADCAST,MULTICAST,' + ifData.state;
+				var qdisc = ifName === 'lo' ? 'noqueue' : 'fq_codel';
+				var macType = ifName === 'lo' ? 'loopback' : 'ether';
+				var broadcast = ifName === 'lo' ? '00:00:00:00:00:00' : 'ff:ff:ff:ff:ff:ff';
+				linkOut += linkIdx + ': ' + ifName + ': <' + flags + '> mtu ' + (ifName === 'lo' ? '65536' : '1500') + ' qdisc ' + qdisc + ' state ' + (ifName === 'lo' ? 'UNKNOWN' : ifData.state) + '\n';
+				linkOut += '    link/' + macType + ' ' + ifData.mac + ' brd ' + broadcast + '\n';
+				linkIdx++;
+			}
+			if (!linkOut) return [{ text: 'Device "' + target + '" does not exist.', type: 'error' }];
+			return [{ text: linkOut.trimEnd(), type: null }];
+		}
 		if (sub === 'neigh' || sub === 'n') {
 			var output = '';
 			for (var i = 0; i < net.arp.length; i++) {
@@ -1306,7 +1327,7 @@ var TerminalCommands = {
 			}
 			return [{ text: output.trimEnd(), type: null }];
 		}
-		return [{ text: 'Usage: ip [addr|route|neigh]', type: null }];
+		return [{ text: 'Usage: ip [addr|link|route|neigh]', type: null }];
 	},
 
 	cmdIfconfig: function(ctx, args) {
@@ -1373,7 +1394,8 @@ var TerminalCommands = {
 			return [{ text: 'openssl: Nutzung: openssl s_client -connect host:port', type: null }];
 		}
 		if (args[0] === 's_client') {
-			var host = args[2] || 'example.com:443';
+			var connectIdx = args.indexOf('-connect');
+			var host = (connectIdx !== -1 && args[connectIdx + 1]) ? args[connectIdx + 1] : (args[2] || 'example.com:443');
 			var domain = host.split(':')[0];
 			var output = 'CONNECTED(00000003)\n';
 			output += 'depth=2 C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert Global Root CA\n';
@@ -1577,11 +1599,13 @@ InteractiveTerminal.prototype.init = function() {
 	this.container = document.getElementById(this.containerId);
 	if (!this.container) return false;
 	var config = TerminalEnvConfig[this.environment] || TerminalEnvConfig['linux-forensik'];
-	this.container.innerHTML = '<div class="terminal-container"><div class="t-header"><span class="t-title">' + config.title + '</span><div class="t-header-actions"><span class="t-status">Bereit</span><button class="t-minimize-btn" title="Terminal minimieren">&#x2212;</button></div></div><div class="t-body"></div><div class="t-input-wrap"><span class="t-prompt-label">' + this.getPrompt() + '</span><div class="t-input-field"><span class="t-text-mirror"></span><span class="t-block-cursor"></span><input type="text" class="t-input" autocomplete="off"></div></div></div>';
+	this.container.innerHTML = '<div class="terminal-container"><div class="t-header"><span class="t-title">' + config.title + '</span><div class="t-header-actions"><span class="t-status">Bereit</span><button class="t-minimize-btn" title="Terminal minimieren">&#x2212;</button></div></div><div class="t-body"></div><div class="t-input-wrap"><span class="t-prompt-label">' + this.getPrompt() + '</span><div class="t-input-field"><span class="t-text-before"></span><span class="t-block-cursor"></span><span class="t-text-after"></span><input type="text" class="t-input" autocomplete="off"></div></div></div>';
 	this.outputEl = this.container.querySelector('.t-body');
 	this.inputEl = this.container.querySelector('.t-input');
+	this.inputFieldEl = this.container.querySelector('.t-input-field');
 	this.promptEl = this.container.querySelector('.t-prompt-label');
-	this.mirrorEl = this.container.querySelector('.t-text-mirror');
+	this.mirrorBeforeEl = this.container.querySelector('.t-text-before');
+	this.mirrorAfterEl = this.container.querySelector('.t-text-after');
 	this.cursorEl = this.container.querySelector('.t-block-cursor');
 	this.bindEvents();
 	var self = this;
@@ -1608,16 +1632,28 @@ InteractiveTerminal.prototype.getInputText = function() {
 
 InteractiveTerminal.prototype.clearInput = function() {
 	this.inputEl.value = '';
-	if (this.mirrorEl) this.mirrorEl.textContent = '';
+	if (this.mirrorBeforeEl) this.mirrorBeforeEl.textContent = '';
+	if (this.mirrorAfterEl) this.mirrorAfterEl.textContent = '';
 };
 
 InteractiveTerminal.prototype.updateMirror = function() {
-	if (this.mirrorEl) this.mirrorEl.textContent = this.inputEl.value;
+	var inputValue = this.inputEl.value || '';
+	var caretPos = typeof this.inputEl.selectionStart === 'number' ? this.inputEl.selectionStart : inputValue.length;
+	var before = inputValue.substring(0, caretPos);
+	var cursorChar = caretPos < inputValue.length ? inputValue.charAt(caretPos) : ' ';
+	var after = caretPos < inputValue.length ? inputValue.substring(caretPos + 1) : '';
+	if (this.mirrorBeforeEl) this.mirrorBeforeEl.textContent = before;
+	if (this.mirrorAfterEl) this.mirrorAfterEl.textContent = after;
+	if (this.cursorEl) this.cursorEl.textContent = cursorChar;
+	if (this.inputFieldEl) this.inputFieldEl.classList.toggle('has-input', inputValue.length > 0);
 };
 
 InteractiveTerminal.prototype.bindEvents = function() {
 	var self = this;
 	this.inputEl.addEventListener('input', function() { self.updateMirror(); });
+	this.inputEl.addEventListener('click', function() { self.updateMirror(); });
+	this.inputEl.addEventListener('keyup', function() { self.updateMirror(); });
+	this.inputEl.addEventListener('focus', function() { self.updateMirror(); });
 	this.inputEl.addEventListener('keydown', function(e) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
@@ -1631,11 +1667,26 @@ InteractiveTerminal.prototype.bindEvents = function() {
 			self.clearInput();
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
-			if (self.historyIndex > 0) { self.historyIndex--; self.inputEl.value = self.history[self.historyIndex]; self.updateMirror(); }
+			if (self.historyIndex > 0) {
+				self.historyIndex--;
+				self.inputEl.value = self.history[self.historyIndex];
+				self.inputEl.setSelectionRange(self.inputEl.value.length, self.inputEl.value.length);
+				self.updateMirror();
+			}
 		} else if (e.key === 'ArrowDown') {
 			e.preventDefault();
-			if (self.historyIndex < self.history.length - 1) { self.historyIndex++; self.inputEl.value = self.history[self.historyIndex]; self.updateMirror(); }
-			else { self.historyIndex = self.history.length; self.inputEl.value = ''; self.updateMirror(); }
+			if (self.historyIndex < self.history.length - 1) {
+				self.historyIndex++;
+				self.inputEl.value = self.history[self.historyIndex];
+				self.inputEl.setSelectionRange(self.inputEl.value.length, self.inputEl.value.length);
+				self.updateMirror();
+			}
+			else {
+				self.historyIndex = self.history.length;
+				self.inputEl.value = '';
+				self.inputEl.setSelectionRange(0, 0);
+				self.updateMirror();
+			}
 		}
 	});
 };

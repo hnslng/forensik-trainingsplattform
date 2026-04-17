@@ -8,8 +8,4 @@ ip addr show eth0
 ip route show
 
 # ARP-Tabelle (Nachbarn)
-ip neigh show
-
-# Interface aktivieren/deaktivieren
-sudo ip link set eth0 up
-sudo ip link set eth0 down</code></pre></div><blockquote><p><strong>Tipp:</strong> <span class="inline-code">ip a</span> = Kurzform f&uuml;r <span class="inline-code">ip addr show</span>. <span class="inline-code">ip r</span> = Kurzform f&uuml;r <span class="inline-code">ip route show</span>.</p></blockquote>
+ip neigh show</code></pre></div><blockquote><p><strong>Tipp:</strong> <span class="inline-code">ip a</span> = Kurzform f&uuml;r <span class="inline-code">ip addr show</span>. <span class="inline-code">ip r</span> = Kurzform f&uuml;r <span class="inline-code">ip route show</span>. Interface-Status-Operationen wie <span class="inline-code">ip link set ...</span> sind im Realbetrieb relevant, aber nicht Teil der Simulator-Befehle.</p></blockquote>
