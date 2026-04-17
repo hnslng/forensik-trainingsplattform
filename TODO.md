@@ -29,3 +29,8 @@
 - [ ] Import/export progress (JSON file download/upload)
 - [ ] Print-friendly CSS for chapters
 - [ ] Keyboard navigation (Tab through lab cards)
+
+## Content Improvements
+
+- [ ] **Netzwerk-Forensik:** QUIC als Protokoll hinzufügen und behandeln
+- [x] **Windows-Forensik:** BTRFS in die Dateisystemauswahl hinzufügen

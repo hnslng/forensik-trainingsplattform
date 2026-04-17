@@ -926,8 +926,13 @@ strings.exe C:\Cases\case01\images\disk01.img | findstr /I "password pdf"
 | **exFAT** | Wechselmedien | große Dateien, hohe Kompatibilität | wenige Metadaten, kein Journal | Timestamp-Verhalten und FAT-Chain prüfen |
 | **FAT32** | Wechselmedien/Legacy | maximale Kompatibilität | 4-GB-Dateigrößenlimit | wenig Journaling-Artefakte, einfache Recovery |
 | ext4 | Linux | Journaling, stabile Performance | Linux-spezifische Strukturen | Journal/Superblock/Extent-Struktur relevant |
+| btrfs | Linux (Desktop, NAS, Synology) | Copy-on-Write, Snapshots, Subvolumes, Checksums, integrierte RAID-Modi | hohe strukturelle Komplexität (B-Trees, dynamische Metadaten-Chunks), Recovery bei defekten Trees anspruchsvoll, unter Windows nur Lesezugriff (WinBtrfs) | Subvolumes und Snapshots getrennt auswerten (enthalten oft ältere Dateiversionen); `btrfs inspect-internal`, `btrfs restore` aus Linux-Live-Umgebung; Checksum-Fehler können echte Manipulation oder Medium-Defekt sein – unterscheiden |
+| ZFS | Solaris/Illumos, FreeBSD, TrueNAS, Linux (OpenZFS) | Pool/Dataset-Modell, Copy-on-Write, Snapshots + Clones, Ende-zu-Ende-Checksums, Deduplikation, Kompression | proprietäre Historie (CDDL), kein natives Windows-Tooling, Recovery ohne Original-Pool-Layout schwierig, hoher RAM-Bedarf beim Import | Pool read-only importieren (`zpool import -o readonly=on -N`); Snapshots (`zfs list -t snapshot`) liefern frühere Zustände – oft Tage bis Monate zurück; bei verschlüsselten Datasets Schlüssel/Passphrase dokumentieren; `zdb` für Low-Level-Analyse |
 | APFS | macOS | Snapshots, Verschlüsselung | macOS-spezifisch | Container/Volumes; Encryption prüfen |
 | HFS+ | ältere macOS | Legacy | veraltet | Journal/Metadaten beachten |
+
+**Kurz zur Einordnung der beiden neuen Einträge:** **btrfs** triffst du im Forensik-Alltag vor allem auf Synology-NAS und einigen Linux-Desktop-Distributionen (openSUSE, Fedora-Root-Layouts). Die Snapshots sind hier das wichtigste Artefakt – sie liegen als eigene Subvolumes im gleichen Pool und enthalten oft Wochen zurückreichende Dateiversionen. **ZFS** begegnet dir hauptsächlich auf TrueNAS/FreeNAS-Systemen, FreeBSD-Servern und in Proxmox-Umgebungen. Wichtig beim Import: immer `readonly=on` und möglichst `-N` (kein automatisches Mount), sonst schreibt der Kernel Pool-Metadaten zurück und die Integrität ist dahin.
+
 
 ## 12.2 NTFS – Aufbau und forensisch relevante Strukturen
 
