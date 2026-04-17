@@ -4,7 +4,7 @@
 **Ziel:** Technische Abläufe verstehen, korrekt anwenden und forensisch sauber dokumentieren.
 **Niveau:** Fortgeschrittener Einsteiger – Praxis IT-Forensik
 **System:** Windows 10 / 11 (PowerShell 5.1 / 7.x, CMD, forensische Drittanbieter-Tools)
-**Version:** 2.0 – Windows-Adaption mit Case-Studie, Quellen und Übungen
+**Version:** 1.0 – Windows-Adaption mit Case-Studie, Quellen und Übungen
 
 ---
 
