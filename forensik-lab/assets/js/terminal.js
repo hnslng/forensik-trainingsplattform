@@ -50,6 +50,27 @@ var TerminalSharedNetwork = {
 	}
 };
 
+var TerminalSharedWindowsFS = {
+	'/': { type: 'dir', children: ['cases', 'tools', 'tmp'] },
+	'/cases': { type: 'dir', children: ['case01', 'uebung01'] },
+	'/cases/case01': { type: 'dir', children: ['images', 'hashes', 'notes', 'reports'] },
+	'/cases/case01/images': { type: 'dir', children: ['disk01.img', 'disk01.E01'] },
+	'/cases/case01/hashes': { type: 'dir', children: ['original.md5', 'image.md5'] },
+	'/cases/case01/notes': { type: 'dir', children: ['session.log', 'verification.txt'] },
+	'/cases/case01/reports': { type: 'dir', children: [] },
+	'/cases/uebung01': { type: 'dir', children: ['images', 'notes'] },
+	'/cases/uebung01/images': { type: 'dir', children: [] },
+	'/cases/uebung01/notes': { type: 'dir', children: [] },
+	'/tools': { type: 'dir', children: ['ftkimager.exe', 'strings.exe', 'dd.exe', 'aim_cli.exe'] },
+	'/tmp': { type: 'dir', children: [] },
+	'/cases/case01/images/disk01.img': { type: 'file', content: '[raw image data]', size: '32GB' },
+	'/cases/case01/images/disk01.E01': { type: 'file', content: '[e01 image data]', size: '18GB' },
+	'/cases/case01/hashes/original.md5': { type: 'file', content: 'A1B2C3D4E5F67890ABCDEF1234567890  original', size: '48B' },
+	'/cases/case01/hashes/image.md5': { type: 'file', content: 'A1B2C3D4E5F67890ABCDEF1234567890  disk01.img', size: '52B' },
+	'/cases/case01/notes/session.log': { type: 'file', content: 'Transcript started...\nTranscript stopped.', size: '2KB' },
+	'/cases/case01/notes/verification.txt': { type: 'file', content: 'Verification: MATCH', size: '64B' }
+};
+
 var TerminalEnvConfig = {
 	'linux-forensik': {
 		title: 'FORENSIK-TERMINAL',
@@ -58,6 +79,10 @@ var TerminalEnvConfig = {
 	'netzwerk-forensik': {
 		title: 'NETZWERK-TERMINAL',
 		welcomeMsg: 'Willkommen im Netzwerk-Terminal. Tippe "help" fuer alle Befehle.\n'
+	},
+	'windows-forensik': {
+		title: 'WINDOWS-TERMINAL',
+		welcomeMsg: 'Willkommen im Windows-Forensik-Terminal. Tippe "help" fuer alle Befehle.\n'
 	}
 };
 
@@ -66,6 +91,7 @@ var TerminalBaseCommandNames = ['clear', 'echo', 'tee', 'date', 'whoami', 'which
 var TerminalForensikCommandNames = ['lsblk', 'fdisk', 'parted', 'dd', 'dc3dd', 'dcfldd', 'ewfacquire', 'mount', 'umount', 'losetup', 'ewfmount', 'fls', 'mmls', 'icat', 'istat', 'hdparm', 'nvme', 'blockdev', 'script', 'blkid'];
 
 var TerminalNetzwerkCommandNames = ['ping', 'traceroute', 'tracepath', 'mtr', 'dig', 'nslookup', 'curl', 'wget', 'ip', 'ifconfig', 'ss', 'netstat', 'nmap', 'tshark', 'tcpdump', 'arp', 'openssl', 'ssh-keygen', 'gpg', 'hostname'];
+var TerminalWindowsCommandNames = ['get-disk', 'get-partition', 'get-volume', 'get-physicaldisk', 'get-filehash', 'get-childitem', 'get-command', 'get-history', 'select', 'select-object', 'export-csv', 'out-file', 'start-transcript', 'stop-transcript', 'diskpart', 'certutil', 'ftkimager.exe', 'dd.exe', 'aim_cli.exe', 'format-hex', 'compare-object', 'findstr', 'strings.exe', 'winget'];
 
 var TerminalCommands = {
 	resolvePath: function(currentPath, p) {
@@ -90,18 +116,20 @@ var TerminalCommands = {
 		if (TerminalBaseCommandNames.indexOf(cmd) !== -1) return true;
 		if (envId === 'linux-forensik' && TerminalForensikCommandNames.indexOf(cmd) !== -1) return true;
 		if (envId === 'netzwerk-forensik' && TerminalNetzwerkCommandNames.indexOf(cmd) !== -1) return true;
+		if (envId === 'windows-forensik' && TerminalWindowsCommandNames.indexOf(cmd) !== -1) return true;
 		return false;
 	},
 
 	execute: function(cmdLine, ctx, stdin) {
 		var parts = cmdLine.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
-		var cmd = parts[0];
+		var cmdRaw = parts[0] || '';
+		var cmd = cmdRaw.toLowerCase();
 		var args = parts.slice(1).map(function(a) { return a.replace(/^"|"$/g, ''); });
 		var self = TerminalCommands;
 		var envId = ctx.environment || 'linux-forensik';
 
 		if (!self.isCommandAvailable(cmd, envId)) {
-			return { outputs: [{ text: 'bash: ' + cmd + ': Befehl nicht gefunden. Tippe "help" fuer Hilfe.', type: 'error' }], clear: false };
+			return { outputs: [{ text: 'bash: ' + cmdRaw + ': Befehl nicht gefunden. Tippe "help" fuer Hilfe.', type: 'error' }], clear: false };
 		}
 
 		switch (cmd) {
@@ -196,8 +224,32 @@ var TerminalCommands = {
 			case 'ssh-keygen': return { outputs: self.cmdSshKeygen(ctx, args), clear: false };
 			case 'gpg': return { outputs: self.cmdGpg(ctx, args), clear: false };
 			case 'hostname': return { outputs: self.cmdHostname(ctx, args), clear: false };
+			case 'get-disk': return { outputs: self.cmdGetDisk(ctx, args), clear: false };
+			case 'get-partition': return { outputs: self.cmdGetPartition(ctx, args), clear: false };
+			case 'get-volume': return { outputs: self.cmdGetVolume(ctx, args), clear: false };
+			case 'get-physicaldisk': return { outputs: self.cmdGetPhysicalDisk(ctx, args), clear: false };
+			case 'get-filehash': return { outputs: self.cmdGetFileHash(ctx, args), clear: false };
+			case 'get-childitem': return { outputs: self.cmdGetChildItem(ctx, args), clear: false };
+			case 'get-command': return { outputs: self.cmdGetCommand(ctx, args), clear: false };
+			case 'get-history': return { outputs: self.history(ctx, args), clear: false };
+			case 'select':
+			case 'select-object': return { outputs: self.cmdSelectObject(ctx, args, stdin), clear: false };
+			case 'export-csv': return { outputs: self.cmdExportCsv(ctx, args, stdin), clear: false };
+			case 'out-file': return { outputs: self.cmdOutFile(ctx, args, stdin), clear: false };
+			case 'start-transcript': return { outputs: self.cmdStartTranscript(ctx, args), clear: false };
+			case 'stop-transcript': return { outputs: self.cmdStopTranscript(ctx, args), clear: false };
+			case 'diskpart': return { outputs: self.cmdDiskpart(ctx, args), clear: false };
+			case 'certutil': return { outputs: self.cmdCertutil(ctx, args), clear: false };
+			case 'ftkimager.exe': return { outputs: self.cmdFtkImager(ctx, args), clear: false };
+			case 'dd.exe': return { outputs: self.dd(ctx, args), clear: false };
+			case 'aim_cli.exe': return { outputs: self.cmdAimCli(ctx, args), clear: false };
+			case 'format-hex': return { outputs: self.cmdFormatHex(ctx, args), clear: false };
+			case 'compare-object': return { outputs: self.cmdCompareObject(ctx, args), clear: false };
+			case 'findstr': return { outputs: self.cmdFindstr(ctx, args, stdin), clear: false };
+			case 'strings.exe': return { outputs: self.strings(ctx, args), clear: false };
+			case 'winget': return { outputs: self.cmdWinget(ctx, args), clear: false };
 
-			default: return { outputs: [{ text: 'bash: ' + cmd + ': Befehl nicht gefunden. Tippe "help" fuer Hilfe.', type: 'error' }], clear: false };
+			default: return { outputs: [{ text: 'bash: ' + cmdRaw + ': Befehl nicht gefunden. Tippe "help" fuer Hilfe.', type: 'error' }], clear: false };
 		}
 	},
 
@@ -356,6 +408,33 @@ var TerminalCommands = {
 			h += '  openssl s_client   - TLS-Zertifikat pruefen\n';
 			h += '  ssh-keygen -t rsa  - SSH-Schluessel erstellen\n';
 			h += '  gpg --gen-key      - GPG-Schluessel erstellen\n';
+		}
+
+		if (envId === 'windows-forensik') {
+			h += 'Identifikation:\n';
+			h += '  Get-Disk                     - Physische Datentraeger\n';
+			h += '  Get-Partition -DiskNumber N  - Partitionen eines Datentraegers\n';
+			h += '  Get-Volume                   - Volumes und Dateisysteme\n';
+			h += '  Get-PhysicalDisk             - Hardwaredetails\n\n';
+			h += 'Imaging und Verifikation:\n';
+			h += '  ftkimager.exe ... --verify   - E01/RAW Imaging\n';
+			h += '  dd.exe if=... of=...         - RAW-Imaging\n';
+			h += '  Get-FileHash -Algorithm MD5  - Hash berechnen\n';
+			h += '  certutil -hashfile ... MD5   - Hash per CMD\n';
+			h += '  aim_cli.exe --mount --readonly - Read-only Mount\n\n';
+			h += 'Analyse und Dokumentation:\n';
+			h += '  Format-Hex -Path ...         - Hex-Ausgabe\n';
+			h += '  Compare-Object (...) (...)   - Textvergleich\n';
+			h += '  strings.exe [file]           - Strings extrahieren\n';
+			h += '  findstr /I ...               - Treffer filtern\n';
+			h += '  Get-History                  - Befehlsverlauf anzeigen\n';
+			h += '  Select / Select-Object ...   - Ausgabe filtern\n';
+			h += '  Export-Csv [path]            - CSV-Datei schreiben\n';
+			h += '  Out-File [path]              - Textdatei schreiben\n';
+			h += '  Start-Transcript             - Logging starten\n';
+			h += '  Stop-Transcript              - Logging beenden\n';
+			h += '  diskpart                     - Datentraegerverwaltung\n';
+			h += '  winget install [paket]       - Tool-Installation\n';
 		}
 
 		return [{ text: h, type: 'info' }];
@@ -604,6 +683,10 @@ var TerminalCommands = {
 
 	uname: function(ctx, args) {
 		var envId = ctx.environment || 'linux-forensik';
+		if (envId === 'windows-forensik') {
+			if (args.indexOf('-a') !== -1) return [{ text: 'Windows windows-lab 10.0.22631 Build 22631 x86_64', type: null }];
+			return [{ text: 'Windows_NT', type: null }];
+		}
 		var hostname = envId === 'netzwerk-forensik' ? 'netzwerk-lab' : 'forensik-workstation';
 		var kernel = envId === 'netzwerk-forensik' ? '6.1.0-generic' : '6.1.0-kali9-amd64';
 		if (args.indexOf('-a') !== -1) return [{ text: 'Linux ' + hostname + ' ' + kernel + ' #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux', type: null }];
@@ -613,6 +696,17 @@ var TerminalCommands = {
 	which: function(ctx, args) {
 		if (!args[0]) return [{ text: 'which: Befehlsname fehlt', type: 'error' }];
 		var cmds = { dd: '/usr/bin/dd', dc3dd: '/usr/bin/dc3dd', dcfldd: '/usr/bin/dcfldd', ewfacquire: '/usr/bin/ewfacquire', sha256sum: '/usr/bin/sha256sum', md5sum: '/usr/bin/md5sum', fls: '/usr/bin/fls', xxd: '/usr/bin/xxd', strings: '/usr/bin/strings', hdparm: '/usr/sbin/hdparm', nvme: '/usr/sbin/nvme', ping: '/usr/bin/ping', traceroute: '/usr/bin/traceroute', dig: '/usr/bin/dig', nmap: '/usr/bin/nmap', curl: '/usr/bin/curl', wget: '/usr/bin/wget', ssh: '/usr/bin/ssh', openssl: '/usr/bin/openssl' };
+		if ((ctx.environment || 'linux-forensik') === 'windows-forensik') {
+			var wcmds = {
+				'get-disk': 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules\\Storage\\Get-Disk',
+				'get-filehash': 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\Modules\\Microsoft.PowerShell.Utility\\Get-FileHash',
+				'ftkimager.exe': 'C:\\Tools\\FTK\\ftkimager.exe',
+				'strings.exe': 'C:\\Tools\\Sysinternals\\strings.exe',
+				'aim_cli.exe': 'C:\\Program Files\\Arsenal Image Mounter\\aim_cli.exe'
+			};
+			var key = args[0].toLowerCase();
+			if (wcmds[key]) return [{ text: wcmds[key], type: null }];
+		}
 		if (cmds[args[0]]) return [{ text: cmds[args[0]], type: null }];
 		return [{ text: args[0] + ' nicht gefunden', type: 'error' }];
 	},
@@ -1514,9 +1608,169 @@ var TerminalCommands = {
 		return [{ text: 'gpg: Nutzung: gpg --gen-key | --list-keys | --export', type: null }];
 	},
 
+	cmdGetDisk: function(ctx, args) {
+		var out = 'Number FriendlyName        SerialNumber         Size      PartitionStyle  BusType\n';
+		out += '------ ------------        ------------         ----      --------------  -------\n';
+		out += '0      Samsung SSD 970     S4J2NS0R123456K      512 GB    GPT             NVMe\n';
+		out += '1      SanDisk Cruzer      4C5300001234567890    32 GB    MBR             USB';
+		return [{ text: out, type: null }];
+	},
+
+	cmdGetPartition: function(ctx, args) {
+		var diskIdx = args.indexOf('-DiskNumber');
+		var diskNo = diskIdx !== -1 ? args[diskIdx + 1] : '1';
+		var out = 'DiskNumber PartitionNumber DriveLetter Offset   Size      Type\n';
+		out += '---------- --------------- ----------- ------   ----      ----\n';
+		if (diskNo === '0') out += '0          1               C           1048576  511.5 GB  Basic';
+		else out += '1          1               E           1048576   31.9 GB  Basic';
+		return [{ text: out, type: null }];
+	},
+
+	cmdGetVolume: function(ctx, args) {
+		var out = 'DriveLetter FileSystemLabel FileSystem Size      SizeRemaining HealthStatus\n';
+		out += '----------- --------------- ---------- ----      ------------- ------------\n';
+		out += 'C           System          NTFS       511.5 GB  180.3 GB      Healthy\n';
+		out += 'E           USB             FAT32       31.9 GB   12.2 GB      Healthy';
+		return [{ text: out, type: null }];
+	},
+
+	cmdGetPhysicalDisk: function(ctx, args) {
+		var out = 'DeviceId FriendlyName      SerialNumber        MediaType BusType Size\n';
+		out += '-------- ------------      ------------        --------- ------- ----\n';
+		out += '0        Samsung SSD 970   S4J2NS0R123456K     SSD       NVMe    512 GB\n';
+		out += '1        SanDisk Cruzer    4C5300001234567890  SSD       USB      32 GB';
+		return [{ text: out, type: null }];
+	},
+
+	cmdGetFileHash: function(ctx, args) {
+		var algoIdx = args.indexOf('-Algorithm');
+		var algo = algoIdx !== -1 ? (args[algoIdx + 1] || 'SHA256') : 'SHA256';
+		var file = args[args.length - 1] || 'disk01.img';
+		var hash = algo.toUpperCase() === 'MD5'
+			? 'A1B2C3D4E5F67890ABCDEF1234567890'
+			: 'A1B2C3D4E5F6789012345678901234567890ABCDEF1234567890ABCDEF123456';
+		return [{ text: 'Algorithm : ' + algo.toUpperCase() + '\nHash      : ' + hash + '\nPath      : ' + file, type: 'success' }];
+	},
+
+	cmdGetChildItem: function(ctx, args) {
+		var out = 'Mode   LastWriteTime       Length Name\n';
+		out += '----   -------------       ------ ----\n';
+		out += 'd----- 15.03.2024 09:30           images\n';
+		out += 'd----- 15.03.2024 09:35           hashes\n';
+		out += '-a---- 15.03.2024 09:31 34359738368 disk01.img\n';
+		out += '-a---- 15.03.2024 09:37         52 image.md5';
+		return [{ text: out, type: null }];
+	},
+
+	cmdGetCommand: function(ctx, args) {
+		var target = args[0] || 'ftkimager.exe';
+		return this.which(ctx, [target]);
+	},
+
+	cmdSelectObject: function(ctx, args, stdin) {
+		if (!stdin) return [{ text: 'Select-Object: Keine Eingabedaten aus der Pipeline erhalten.', type: 'warning' }];
+		var lines = stdin.split('\n');
+		var props = args.filter(function(a) { return a.charAt(0) !== '-'; }).join(' ').trim();
+		if (!props) return [{ text: lines.join('\n').trim(), type: null }];
+		return [{ text: lines.join('\n').trim() + '\n(gefiltert: ' + props + ')', type: null }];
+	},
+
+	cmdExportCsv: function(ctx, args, stdin) {
+		var path = args.filter(function(a) { return a.charAt(0) !== '-'; })[0] || 'C:\\Cases\\case01\\notes\\export.csv';
+		var normalized = path.replace(/^C:\\/i, '/').replace(/\\/g, '/');
+		var content = (stdin || 'ColumnA,ColumnB\nValueA,ValueB').trim();
+		ctx.filesystem[normalized] = { type: 'file', content: content, size: content.length + 'B' };
+		return [{ text: 'CSV exportiert nach ' + path, type: 'success' }];
+	},
+
+	cmdOutFile: function(ctx, args, stdin) {
+		var path = args.filter(function(a) { return a.charAt(0) !== '-'; })[0] || 'C:\\Cases\\case01\\notes\\output.txt';
+		var normalized = path.replace(/^C:\\/i, '/').replace(/\\/g, '/');
+		var content = (stdin || 'Ausgabe gespeichert').trim();
+		ctx.filesystem[normalized] = { type: 'file', content: content, size: content.length + 'B' };
+		return [{ text: 'Datei geschrieben: ' + path, type: 'success' }];
+	},
+
+	cmdStartTranscript: function(ctx, args) {
+		ctx.scriptActive = true;
+		ctx.scriptFile = '/cases/case01/notes/session.log';
+		ctx.scriptLines = ['Transcript started: ' + new Date().toLocaleString('de-DE')];
+		return [{ text: 'Transcript started, output file is C:\\Cases\\case01\\notes\\session.log', type: 'success' }];
+	},
+
+	cmdStopTranscript: function(ctx, args) {
+		if (!ctx.scriptActive) return [{ text: 'Stop-Transcript: Kein aktiver Transcript-Stream gefunden.', type: 'warning' }];
+		ctx.scriptActive = false;
+		return [{ text: 'Transcript stopped, output file is C:\\Cases\\case01\\notes\\session.log', type: 'success' }];
+	},
+
+	cmdDiskpart: function(ctx, args) {
+		var out = 'Microsoft DiskPart-Version 10.0.22631.1\n';
+		out += 'DISKPART> list disk\n';
+		out += '  Datentraeger 0  Online   512 GB\n';
+		out += '  Datentraeger 1  Online    32 GB\n';
+		out += 'DISKPART> automount disable\n';
+		out += 'Automatic mounting of new volumes disabled.';
+		return [{ text: out, type: null }];
+	},
+
+	cmdCertutil: function(ctx, args) {
+		if (args[0] === '-hashfile') {
+			var file = args[1] || 'disk01.img';
+			var algo = (args[2] || 'MD5').toUpperCase();
+			var hash = algo === 'MD5' ? 'A1B2C3D4E5F67890ABCDEF1234567890' : 'A1B2C3D4E5F6789012345678901234567890ABCDEF1234567890ABCDEF123456';
+			return [{ text: algo + ' hash of file ' + file + ':\n' + hash + '\nCertUtil: -hashfile command completed successfully.', type: 'success' }];
+		}
+		return [{ text: 'certutil: Nutzung certutil -hashfile <datei> MD5|SHA256', type: 'info' }];
+	},
+
+	cmdFtkImager: function(ctx, args) {
+		if (args.indexOf('--verify') !== -1) {
+			return [{ text: 'Verification started...\nVerification succeeded.\nMD5: A1B2C3D4E5F67890ABCDEF1234567890', type: 'success' }];
+		}
+		return [{ text: 'FTK Imager imaging started...\nSource: \\\\.\\PHYSICALDRIVE1\nOutput: C:\\Cases\\case01\\images\\disk01.E01\nMD5 calculated.\nImaging completed successfully.', type: 'success' }];
+	},
+
+	cmdAimCli: function(ctx, args) {
+		if (args.indexOf('--mount') !== -1) {
+			ctx.mountedDevices['/cases/case01/mounts/image01'] = '/cases/case01/images/disk01.E01';
+			return [{ text: 'Mount successful (read-only).\nVirtual device: PhysicalDrive3', type: 'success' }];
+		}
+		if (args.indexOf('--dismount') !== -1) return [{ text: 'Image dismounted.', type: 'success' }];
+		return [{ text: 'aim_cli.exe: Nutzung --mount/--dismount mit --readonly', type: 'info' }];
+	},
+
+	cmdFormatHex: function(ctx, args) {
+		return [{ text: '00000000  FA 33 C0 8E D0 BC 00 7C 8B F4 50 07 50 1F FB FC\n000001F0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 55 AA', type: null }];
+	},
+
+	cmdCompareObject: function(ctx, args) {
+		return [{ text: 'InputObject              SideIndicator\n-----------              -------------\nVersion 2 der Datei      =>\nVersion 1 der Datei      <=', type: null }];
+	},
+
+	cmdFindstr: function(ctx, args, stdin) {
+		var q = args.join(' ').replace(/\/I/gi, '').replace(/"/g, '').trim() || 'password';
+		var base = stdin || 'confidential_report.pdf\npassword=Summer2024\nUmsatz_intern.xlsx';
+		var lines = base.split('\n').filter(function(line) {
+			return line.toLowerCase().indexOf(q.toLowerCase()) !== -1 ||
+				(q.toLowerCase().indexOf(' ') !== -1 && q.toLowerCase().split(' ').some(function(token) { return token && line.toLowerCase().indexOf(token) !== -1; }));
+		});
+		return [{ text: (lines.length ? lines.join('\n') : 'Keine Treffer'), type: null }];
+	},
+
+	cmdWinget: function(ctx, args) {
+		if (args[0] === 'install') {
+			var pkg = args[1] || 'Microsoft.Sysinternals.Suite';
+			return [{ text: 'Found ' + pkg + '\nSuccessfully installed package ' + pkg, type: 'success' }];
+		}
+		return [{ text: 'winget: Nutzung winget install <paket>', type: 'info' }];
+	},
+
 	cmdHostname: function(ctx, args) {
 		var envId = ctx.environment || 'linux-forensik';
-		return [{ text: envId === 'netzwerk-forensik' ? 'netzwerk-lab' : 'forensik-workstation', type: null }];
+		if (envId === 'netzwerk-forensik') return [{ text: 'netzwerk-lab', type: null }];
+		if (envId === 'windows-forensik') return [{ text: 'windows-lab', type: null }];
+		return [{ text: 'forensik-workstation', type: null }];
 	}
 };
 
@@ -1553,6 +1807,10 @@ InteractiveTerminal.prototype._initEnvState = function(envId) {
 		state.filesystem = JSON.parse(JSON.stringify(TerminalSharedNetworkFS));
 		state.devices = {};
 		state.network = JSON.parse(JSON.stringify(TerminalSharedNetwork));
+	} else if (envId === 'windows-forensik') {
+		state.filesystem = JSON.parse(JSON.stringify(TerminalSharedWindowsFS));
+		state.devices = {};
+		state.network = null;
 	}
 	this.envStates[envId] = state;
 };
@@ -1713,6 +1971,7 @@ InteractiveTerminal.prototype.scrollToBottom = function() {
 
 InteractiveTerminal.prototype.getPrompt = function() {
 	if (this.environment === 'netzwerk-forensik') return 'analyst@netzwerk-lab:' + this.currentPath + '$ ';
+	if (this.environment === 'windows-forensik') return 'analyst@windows-lab:' + this.currentPath + '> ';
 	return 'analyst@forensik-workstation:' + this.currentPath + '$ ';
 };
 
@@ -1817,6 +2076,10 @@ InlineTerminal.prototype._detectEnvironment = function() {
 		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedNetworkFS));
 		this.devices = {};
 		this.network = JSON.parse(JSON.stringify(TerminalSharedNetwork));
+	} else if (this.environment === 'windows-forensik') {
+		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedWindowsFS));
+		this.devices = {};
+		this.network = null;
 	} else {
 		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedFS));
 		this.devices = JSON.parse(JSON.stringify(TerminalSharedDevices));
@@ -1831,6 +2094,10 @@ InlineTerminal.prototype.setEnvironment = function(envId) {
 		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedNetworkFS));
 		this.devices = {};
 		this.network = JSON.parse(JSON.stringify(TerminalSharedNetwork));
+	} else if (envId === 'windows-forensik') {
+		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedWindowsFS));
+		this.devices = {};
+		this.network = null;
 	} else {
 		this.filesystem = JSON.parse(JSON.stringify(TerminalSharedFS));
 		this.devices = JSON.parse(JSON.stringify(TerminalSharedDevices));
@@ -1998,6 +2265,7 @@ InlineTerminal.prototype.displayInput = function(cmd) {
 
 InlineTerminal.prototype.getPrompt = function() {
 	if (this.environment === 'netzwerk-forensik') return 'analyst@netzwerk-lab:' + this.currentPath + '$ ';
+	if (this.environment === 'windows-forensik') return 'analyst@windows-lab:' + this.currentPath + '> ';
 	return 'analyst@forensik-workstation:' + this.currentPath + '$ ';
 };
 

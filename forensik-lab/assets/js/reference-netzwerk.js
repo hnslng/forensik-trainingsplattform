@@ -183,7 +183,7 @@ var ReferenceNetzwerk = {
 			title: 'Verschlüsselung prüfen',
 			icon: '🔐',
 			html: function() { return '<div class="s-heading">TLS/SSL-Zertifikat prüfen</div>' +
-				'<div class="s-code"><div class="s-code-header"><span class="s-code-label">Bash</span></div><pre><code"># Zertifikat-Details anzeigen\nopenssl s_client -connect example.com:443 -showcerts\n\n# Nur Ablaufdatum\necho | openssl s_client -connect example.com:443 2>/dev/null | \\\n  openssl x509 -noout -dates\n\n# Zertifikatskette prüfen\nopenssl s_client -connect example.com:443 -showcerts </dev/null\n\n# Supported Ciphers anzeigen\nnmap --script ssl-enum-ciphers -p 443 example.com</code></pre></div>' +
+				'<div class="s-code"><div class="s-code-header"><span class="s-code-label">Bash</span></div><pre><code># Zertifikat-Details anzeigen\nopenssl s_client -connect example.com:443 -showcerts\n\n# Nur Ablaufdatum\necho | openssl s_client -connect example.com:443 2>/dev/null | \\\n  openssl x509 -noout -dates\n\n# Zertifikatskette prüfen\nopenssl s_client -connect example.com:443 -showcerts </dev/null\n\n# Supported Ciphers anzeigen\nnmap --script ssl-enum-ciphers -p 443 example.com</code></pre></div>' +
 				'<div class="s-heading">Hash-Prüfsummen erstellen</div>' +
 				'<div class="s-code"><div class="s-code-header"><span class="s-code-label">Bash</span></div><pre><code># SHA-256\nsha256sum datei.txt\n\n# MD5\nmd5sum datei.txt\n\n# Hash verifizieren\nsha256sum -c datei.txt.sha256\n\n# Hash einer Zeichenkette\necho -n "meinpasswort" | sha256sum</code></pre></div>' +
 				'<div class="s-heading">Verschlüsselungsalgorithmen</div>' +

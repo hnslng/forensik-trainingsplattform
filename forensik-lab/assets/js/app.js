@@ -189,6 +189,10 @@ var App = (function () {
     html += '</div>';
     el.innerHTML = html;
 
+    var appRoot = document.getElementById("app");
+    if (appRoot) appRoot.classList.add("hub-view");
+    closeMobileSidebar();
+
     updateBreadcrumbHub();
     setActiveReference(null);
     renderReferenceSidebar();
@@ -231,6 +235,9 @@ var App = (function () {
   function loadChapter(labId, chapterId) {
     var labMeta = findLabMeta(labId);
     if (!labMeta) { renderHub(); return; }
+
+    var appRoot = document.getElementById("app");
+    if (appRoot) appRoot.classList.remove("hub-view");
 
     var html = getChapterHtml(labId, chapterId);
     if (html === null) {
@@ -482,12 +489,35 @@ var App = (function () {
     tick();
   }
 
+  var ReferenceHubPlaceholder = { sections: [] };
+
+  function refFirstCodeLineAfterHeading(root, headingEl, nextHeadingEl) {
+    try {
+      var range = document.createRange();
+      range.setStartAfter(headingEl);
+      if (nextHeadingEl) range.setEndBefore(nextHeadingEl);
+      else range.setEnd(root, root.childNodes.length);
+      var frag = range.cloneContents();
+      var holder = document.createElement("div");
+      holder.appendChild(frag);
+      var codeEl = holder.querySelector(".s-code pre code");
+      if (!codeEl) return "";
+      var line = codeEl.textContent.trim().split("\n")[0];
+      return line || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
   function setActiveReference(labId) {
+    if (labId === null || labId === undefined || labId === "") {
+      window.Reference = ReferenceHubPlaceholder;
+      return;
+    }
     if (labId === "netzwerk-forensik" && typeof ReferenceNetzwerk !== "undefined") {
       window.Reference = ReferenceNetzwerk;
-    } else if (labId === "windows-forensik" && typeof ReferenceForensik !== "undefined") {
-      // Windows-Forensik nutzt vorerst die allgemeine Forensik-Referenz.
-      window.Reference = ReferenceForensik;
+    } else if (labId === "windows-forensik" && typeof ReferenceWindows !== "undefined") {
+      window.Reference = ReferenceWindows;
     } else if (typeof ReferenceForensik !== "undefined") {
       window.Reference = ReferenceForensik;
     }
@@ -496,6 +526,10 @@ var App = (function () {
   function renderReferenceSidebar() {
     var body = document.getElementById("reference-body");
     if (!body || typeof Reference === "undefined" || !Reference.sections) return;
+    if (Reference.sections.length === 0) {
+      body.innerHTML = '<div class="ref-placeholder"><p>W&auml;hle zuerst ein Lab im Hub &mdash; dann erscheint hier die passende Befehlsreferenz.</p></div>';
+      return;
+    }
     var html = '<div class="ref-search-wrap"><input type="text" class="ref-search" id="ref-search-input" placeholder="Befehl suchen..."></div>';
     html += '<div class="ref-commands-list" id="ref-commands-list"></div>';
     html += '<div class="ref-detail-panel" id="ref-detail-panel" style="display:none"><button class="ref-detail-close" id="ref-detail-close">&times;</button><div id="ref-detail-content"></div></div>';
@@ -506,11 +540,11 @@ var App = (function () {
       var tmp = document.createElement("div");
       tmp.innerHTML = sec.html();
       var headings = tmp.querySelectorAll(".s-heading");
-      var codes = tmp.querySelectorAll(".s-code pre code");
       var forSection = [];
       for (var h = 0; h < headings.length; h++) {
         var cmdText = headings[h].textContent.trim();
-        var codeText = codes[h] ? codes[h].textContent.trim().split("\n")[0] : "";
+        var nextHead = headings[h + 1] || null;
+        var codeText = refFirstCodeLineAfterHeading(tmp, headings[h], nextHead);
         forSection.push({ label: cmdText, code: codeText, sectionId: sec.id, sectionTitle: sec.title, headingIdx: h });
       }
       if (forSection.length === 0) {
@@ -577,11 +611,14 @@ var App = (function () {
         var el = headings[headingIdx];
         var fragment = "";
         var sibling = el.nextSibling;
-        while (sibling && sibling.nodeType !== 1 || (sibling.nodeType === 1 && !sibling.classList.contains("s-heading"))) {
-          if (sibling.nodeType === 1) fragment += sibling.outerHTML;
-          else if (sibling.nodeType === 3 && sibling.textContent.trim()) fragment += sibling.textContent;
+        while (sibling) {
+          if (sibling.nodeType === 1) {
+            if (sibling.classList.contains("s-heading")) break;
+            fragment += sibling.outerHTML;
+          } else if (sibling.nodeType === 3 && sibling.textContent.trim()) {
+            fragment += sibling.textContent;
+          }
           sibling = sibling.nextSibling;
-          if (!sibling) break;
         }
         content = '<h4 class="ref-detail-title">' + headings[headingIdx].innerHTML + '</h4>' + fragment;
       }
@@ -907,14 +944,15 @@ var App = (function () {
 
   function handleCopy() {
     var btn = this;
-    var pre = btn.closest(".code-block").querySelector("pre");
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(pre.textContent).then(function () {
-        btn.textContent = "Kopiert!";
-        btn.classList.add("copied");
-        setTimeout(function () { btn.textContent = "Kopieren"; btn.classList.remove("copied"); }, 1500);
-      });
-    }
+    var wrap = btn.closest(".code-block") || btn.closest(".s-code");
+    if (!wrap) return;
+    var pre = wrap.querySelector("pre");
+    if (!pre || !navigator.clipboard) return;
+    navigator.clipboard.writeText(pre.textContent).then(function () {
+      btn.textContent = "Kopiert!";
+      btn.classList.add("copied");
+      setTimeout(function () { btn.textContent = "Kopieren"; btn.classList.remove("copied"); }, 1500);
+    });
   }
 
   function handleToggle() {
@@ -1015,6 +1053,7 @@ var App = (function () {
       return getLabRegistry().length > 0 ? getNavItems(getLabRegistry()[0].id) : [];
     },
     openTerminalWithCommand: openTerminalWithCommand,
+    handleCopy: function (btn) { handleCopy.call(btn); },
     getAchievementSystem: function() { return typeof Gamification !== "undefined" ? Gamification : null; },
     _prevSlide: function () { navigateSlide(-1); },
     _nextSlide: function () { navigateSlide(1); }
