@@ -12,3 +12,4 @@ Aktuelle Referenz:
 
 - `docs/cheatsheets/linux-forensik/linux_forensik_cheatsheet_v2.md`
 - `docs/cheatsheets/windows-forensik/windows_forensik_cheatsheet_v1.md`
+- `docs/cheatsheets/netzwerk-forensik/netzwerktechnik_cheatsheet_v1.md` (Netzwerk-Lab / Grundlagen)

@@ -14,6 +14,8 @@ Das Slide-Design muss nicht das gleiche Layout wie das Cheatsheet haben, aber so
 - typische Fehler aktiv adressieren
 - Ergebnisse pruefbar machen (Soll-Ist)
 
+Fuer **Netzwerk-Forensik** ist `docs/cheatsheets/netzwerk-forensik/netzwerktechnik_cheatsheet_v1.md` die inhaltliche Basis (Grundlagen, Protokolle, Tools). Das Lab nutzt Linux-typische Terminalbefehle im Simulator; **Konzepte** sind plattformunabhaengig, **Kommandozeilen** unter Windows weichen ab. Kurze **Windows-Parallelen** (ein `callout-tip` mit Stichwort-Mapping) reduzieren die Sorge „lerne ich hier etwas, das unter Windows nutzlos ist?“ — siehe Abschnitt „Optional: Windows-Parallele“ in `docs/slide-authoring-guide.md`.
+
 ## 1. Zielgruppe und Lernniveau
 
 - Zielgruppe: Einsteiger ohne tiefes Admin- oder Forensik-Vorwissen.

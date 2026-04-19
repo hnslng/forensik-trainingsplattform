@@ -129,15 +129,26 @@ Schreibe nur Kommandos, die im jeweiligen Lab umgesetzt sind:
 
 - Linux-Lab: siehe `TerminalForensikCommandNames` in `forensik-lab/assets/js/terminal.js`
 - Netzwerk-Lab: siehe `TerminalNetzwerkCommandNames` in `forensik-lab/assets/js/terminal.js`
+- Windows-Lab: siehe `TerminalWindowsCommandNames` in `forensik-lab/assets/js/terminal.js`
 - Basisbefehle: `TerminalBaseCommandNames`
 
 Wenn ein Kommando didaktisch noetig ist, aber im Simulator fehlt:
 1. Entweder Uebung auf bestehende Kommandos anpassen
 2. Oder Command-Handler in `terminal.js` erweitern (inkl. plausibler Ausgabe)
 
+### Optional: Windows-Parallele (Cross-Platform-Hinweis)
+
+In Labs mit **Linux-typischem Terminal** (z. B. Netzwerk-Forensik) lernen Lernende oft `ip`, `dig`, `ss`, `curl` usw. Die **fachlichen Konzepte** (Schichten, Adressen, DNS, PCAP-Auswertung) sind unter **Windows dieselben**; die **Befehle** sind es meist nicht.
+
+Empfehlung (kurz, reicht oft ein `callout-tip` pro Kapitel oder nur auf der Welcome-Seite):
+
+- Ein Satz: Konzept gilt ueberall, Terminalbefehle hier = Linux/Simulator.
+- 1–3 **Stichwort-Mappings** statt vollstaendiger Windows-Anleitung, z. B.: `ip addr` → `ipconfig` / PowerShell `Get-NetIPAddress`; `dig` → `nslookup` oder `Resolve-DnsName`; Wireshark → gleicher Name unter Windows.
+- Keine Pflicht-Uebungen mit Windows-Befehlen im **Netzwerk-Simulator**, solange `terminal.js` nur die Netzwerk-Linux-Liste hat — sonst entstehen frustrierende „Befehl nicht gefunden“-Szenarien.
+
 ## 7) Kapitelnavigation am Ende
 
-Am Kapitelende (oder auf finaler Uebungsseite) Buttons verwenden:
+Viele Kapitel enthalten am Ende einen Block mit `nav-buttons` / `nav-btn` (Beispiel unten). **Aktuelles UI:** In `app.js` (`parseAndRenderSlides`) wird der gerenderte HTML-String **pro H2-Section am ersten** `nav-buttons` **abgeschnitten** — die Buttons erscheinen in der Praxis **nicht** auf der Slide. Kapitelwechsel nutzen Lernende über **Sidebar** und **Topbar** (`Weiter` / `Zurück`). Den Block kannst du trotzdem beibehalten (Konsistenz mit bestehendem Content) oder weglassen; für neue Inhalte ist `complete-section-btn` die sichtbare Kapitel-Abschluss-Aktion.
 
 ```html
 <div class="nav-buttons">
@@ -161,5 +172,7 @@ Am Kapitelende (oder auf finaler Uebungsseite) Buttons verwenden:
 
 ## 9) Weiterfuehrende Dokumente
 
+- Kanonische HTML-Muster (Gold-Beispiele, nicht Teil des Builds): `docs/lab-reference-slides/README.md`
 - Didaktik- und Niveaukonzept: `docs/slide-didaktik-konzept.md`
 - KI-Promptvorlagen fuer Slide-Erstellung: `docs/ki-prompt-slide-erstellung.md`
+- KI-Prompt fuer komplette Labs: `docs/ki-prompt-lab-erstellung.md`

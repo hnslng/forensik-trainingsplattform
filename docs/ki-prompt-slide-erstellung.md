@@ -3,7 +3,13 @@
 Dieser Prompt ist fuer die Erstellung oder Ueberarbeitung von Slides nach dem internen Konzept gedacht.
 Er kann in Cursor, ChatGPT oder aehnlichen Tools verwendet werden.
 
+Fuer die **Generierung eines ganzen Labs** (meta.yaml, alle Kapitel, Cheatsheet, Plattform-Constraints) siehe [ki-prompt-lab-erstellung.md](ki-prompt-lab-erstellung.md).
+
 ## Referenzquelle (wichtig)
+
+Nutze als **strukturelle** Primärreferenz (HTML-Muster, Übungs-Box, Befehls-Folie):
+
+- `docs/lab-reference-slides/README.md` und die verlinkten Beispieldateien darin
 
 Nutze als fachlich-didaktische Primärreferenz:
 

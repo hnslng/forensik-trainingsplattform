@@ -30,6 +30,7 @@ Befehle werden in drei Schichten aufgeloest:
 1. **Base Commands** – Immer verfugbar: Navigation (`ls`, `cd`, `pwd`), Dateioperationen (`cat`, `head`, `tail`, `cp`, `mv`, `rm`), Suche (`grep`, `find`), Hashing (`sha256sum`, `md5sum`), System (`echo`, `date`, `whoami`, `uname`, `clear`, `help`)
 2. **Forensik Environment** – Nur in `linux-forensik`: Disk-Tools (`lsblk`, `fdisk`, `parted`), Imaging (`dd`, `dc3dd`, `ewfacquire`), Mount (`mount`, `losetup`), Sleuth Kit (`fls`, `mmls`, `icat`), Analyse (`strings`, `xxd`, `hexdump`)
 3. **Netzwerk Environment** – Nur in `netzwerk-forensik`: Diagnose (`ping`, `traceroute`, `mtr`), DNS (`dig`, `nslookup`), HTTP (`curl`, `wget`), Netzwerk-Info (`ip`, `ifconfig`, `ss`), Sicherheit (`nmap`, `tshark`, `tcpdump`), Kryptographie (`openssl`, `ssh-keygen`, `gpg`)
+4. **Windows Environment** – Nur in `windows-forensik`: PowerShell/CMD-Befehle fuer Identifikation (`Get-Disk`, `Get-Partition`), Imaging (`ftkimager.exe`, `dd.exe`), Integritaet (`Get-FileHash`, `certutil`), Mounting/Analyse (`aim_cli.exe`, `Format-Hex`, `strings.exe`)
 
 ### Simulated State
 
@@ -41,6 +42,10 @@ Jede Umgebung besitzt einen eigenen simulierten Zustand:
 | **Devices** | Simulierte Blockgerate (sda, sdb, nvme) | Keine |
 | **Network** | Keines | Interfaces (eth0, lo), Routing, ARP, DNS |
 | **Prompt** | `analyst@forensik-workstation:<path>$` | `analyst@netzwerk-lab:<path>$` |
+
+Windows-Umgebung:
+- **Prompt**: `analyst@windows-lab:<path>>`
+- **Fokus**: PowerShell/CMD-Workflows fuer Datentraegerforensik
 
 ### Environment Switching
 
@@ -83,6 +88,12 @@ content/
       welcome/00-intro.md
       ch01-osi/00-intro.md, ...
       ch16-zusammenfassung/...
+  windows-forensik/
+    meta.yaml                     # Windows-Lab Metadaten
+    chapters/
+      welcome/00-intro.md
+      ch01-ablauf/00-intro.md, ...
+      ch21-uebungen/...
 
 forensik-lab/
   index.html                      # SPA Hauptanwendung
@@ -131,12 +142,28 @@ python3 build_content.py
 2. `python3 build_content.py` ausfuhren
 3. Seite im Browser neu laden
 
-### Slide-Authoring
+## Dokumentation
 
-- Anleitung fur neue Slides im bestehenden Design: `docs/slide-authoring-guide.md`
+Alle redaktionellen Hilfen und Vorlagen liegen zentral unter `docs/`.
+
+- Slide-Authoring-Guide: `docs/slide-authoring-guide.md`
 - Didaktik-Konzept fuer Einsteiger-Slides: `docs/slide-didaktik-konzept.md`
-- Prompt-Vorlagen fuer KI-gestuetzte Slide-Erstellung: `docs/ki-prompt-slide-erstellung.md`
-- Cheatsheets (Linux/Windows) als Fachreferenz: `docs/cheatsheets/`
+- Build- und Lab-System: `docs/build-system.md`, `docs/lab-system.md`
+- Cheatsheets als Fachreferenz (Linux/Windows): `docs/cheatsheets/`
+
+### KI-Prompts: wann welche Datei?
+
+| Situation | Datei | Kurzbeschreibung |
+|-----------|--------|------------------|
+| **Neues Lab** von Grund auf oder **umfangreicher** Umbau (`meta.yaml`, alle Kapitel, Welcome, Cheatsheet, Build/Terminal/Slide-Split/Uebungen) | `docs/ki-prompt-lab-erstellung.md` | Master-Prompt fuer die **gesamte** Lab-Erzeugung; Qualitaetsziel Linux-Forensik-Niveau; verweist auf `docs/lab-reference-slides/` |
+| **HTML-Struktur** spiegeln (Intro, Befehls-Folie, Übung, Welcome) ohne echtes Kapitel zu duplizieren | `docs/lab-reference-slides/README.md` | **Gold-Muster** unter `docs/` (nicht im Build); fuer Autor:innen und KI |
+| **Einzelne Slide** oder wenige Abschnitte schreiben/ueberarbeiten; Kurzprompt; Batch-Ueberarbeitung bestehender Slides; Fokus auf eine Lektion | `docs/ki-prompt-slide-erstellung.md` | Prompts fuer **Slide-Granularitaet**; verweist auf Cheatsheets, `slide-authoring-guide` und `lab-reference-slides` |
+
+**Empfehlung:** Neues Lab mit dem **Lab-Prompt** planen/generieren; danach Feinschliff und Refactors pro Kapitel mit dem **Slide-Prompt**. Beide ergaenzen sich — der Lab-Prompt verlinkt den Slide-Prompt explizit.
+
+- KI-Prompt **komplettes Lab**: `docs/ki-prompt-lab-erstellung.md`
+- KI-Prompt **einzelne Slides**: `docs/ki-prompt-slide-erstellung.md`
+- **Lab-Referenz-Slides (Muster)**: `docs/lab-reference-slides/README.md`
 
 ## Neues Lab hinzufugen
 
@@ -166,6 +193,8 @@ python3 build_content.py
 | `#linux-forensik/ch03-imaging` | Spezifisches Forensik-Kapitel |
 | `#netzwerk-forensik` | Welcome-Seite des Netzwerk-Labs |
 | `#netzwerk-forensik/ch03-dns` | Spezifisches Netzwerk-Kapitel |
+| `#windows-forensik` | Welcome-Seite des Windows-Labs |
+| `#windows-forensik/ch05-imaging` | Spezifisches Windows-Kapitel |
 
 ## Deployment
 
